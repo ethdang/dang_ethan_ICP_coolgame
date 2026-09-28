@@ -1,6 +1,7 @@
 import pygame as pg
 from settings import *
 from pygame.sprite import Sprite # import sprite
+from utils import *
 
 from os import path # import path from our operating system
 
@@ -29,11 +30,15 @@ def collide_with_walls(sprite, group, dir):
         if hits:
             if hits[0].rect.centery > sprite.hit_rect.centery:
                 sprite.pos.y = hits[0].rect.top - sprite.hit_rect.height / 2
+                sprite.touching_ground = True
             if hits[0].rect.centery < sprite.hit_rect.centery:
                 sprite.pos.y = hits[0].rect.bottom + sprite.hit_rect.height / 2
 
             sprite.vel.y = 0
             sprite.hit_rect.centery = sprite.pos.y
+        
+        else:
+            sprite.touching_ground = False
 
 class Player(Sprite):
     def __init__(self, game, x, y):
@@ -44,8 +49,11 @@ class Player(Sprite):
 
         self.game = game # allow the player to access game
 
-        self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(WHITE)
+        self.spritesheet = Spritesheet(path.join(self.game.image_dir, "sprite_sheet.png"))
+        self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
+        # self.image.set_colorkey(BLACK) # set black pixels invisible
+        # self.image = pg.Surface((TILESIZE, TILESIZE))
+        # self.image.fill(WHITE)
 
         self.rect = self.image.get_rect()
         self.hit_rect = PLAYER_HIT_RECT
@@ -53,12 +61,14 @@ class Player(Sprite):
         self.vel = vec(0,0)
         self.pos = vec(x * TILESIZE,y * TILESIZE)
 
+        self.touching_ground = False
+
     def get_keys(self):
         # reset v so it doesnt fly away
         # listen for events specific to keys
         # change velocity based on which key is pressed
 
-        self.vel = vec(0,0)
+        self.vel = vec(0,self.vel.y)
         keys = pg.key.get_pressed() # get pressed keys
 
         if keys[pg.K_LEFT] or keys[pg.K_a]: # left
@@ -67,8 +77,20 @@ class Player(Sprite):
             self.vel.x = PLAYER_SPEED
         if keys[pg.K_DOWN] or keys[pg.K_s]: # down
             self.vel.y = PLAYER_SPEED 
-        if keys[pg.K_UP] or keys[pg.K_w]:# and self.touching_ground # up
-            self.vel.y = -PLAYER_SPEED
+        # if keys[pg.K_UP] or keys[pg.K_w]:# and self.touching_ground # up
+        #     self.vel.y = -PLAYER_SPEED
+
+        justpressedkeys = pg.key.get_just_pressed()
+
+        if (justpressedkeys[pg.K_UP] or justpressedkeys[pg.K_w]) and self.touching_ground:
+            print("jump")
+            self.vel.y -= PLAYER_SPEED * 2
+        elif self.touching_ground:
+            self.touching_ground = True
+            self.vel.y = 0
+        else:
+            self.touching_ground = False
+            self.vel.y += GRAVITY * self.game.dt
 
         # check to see if the player is mocing diagonally
         if self.vel.x != 0 and self.vel.y != 0:
@@ -83,6 +105,8 @@ class Player(Sprite):
 
     def update(self):
         self.get_keys()
+        print(self.touching_ground) 
+
         self.rect.center = self.pos
         self.pos += self.vel * self.game.dt
 
@@ -91,8 +115,6 @@ class Player(Sprite):
         self.hit_rect.centery = self.pos.y
         collide_with_walls(self, self.game.all_walls, 'y')
         self.rect.center = self.hit_rect.center
-
-        self.vel.y -= GRAVITY * self.game.dt
         
         self.handle_collision()
 
