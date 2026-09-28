@@ -1,0 +1,183 @@
+import pygame as pg
+from settings import *
+from pygame.sprite import Sprite # import sprite
+
+from os import path # import path from our operating system
+
+vec = pg.math.Vector2
+
+def collide_hit_rect(one, two):
+    return one.hit_rect.colliderect(two.rect)
+
+def collide_with_walls(sprite, group, dir):
+     # me, wall, destroy, return if we actually collided
+    hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
+
+    if dir == 'x': # checking for x collision
+        if hits:
+            # if we are colliding from the right
+            if hits[0].rect.centerx > sprite.hit_rect.centerx:
+                # reposition sprite to the left side of the wall
+                sprite.pos.x = hits[0].rect.left - sprite.hit_rect.width / 2
+            if hits[0].rect.centerx < sprite.hit_rect.centerx:
+                sprite.pos.x = hits[0].rect.right + sprite.hit_rect.width / 2
+
+            sprite.vel.x = 0
+            sprite.hit_rect.centerx = sprite.pos.x
+
+    if dir == 'y': 
+        if hits:
+            if hits[0].rect.centery > sprite.hit_rect.centery:
+                sprite.pos.y = hits[0].rect.top - sprite.hit_rect.height / 2
+            if hits[0].rect.centery < sprite.hit_rect.centery:
+                sprite.pos.y = hits[0].rect.bottom + sprite.hit_rect.height / 2
+
+            sprite.vel.y = 0
+            sprite.hit_rect.centery = sprite.pos.y
+
+class Player(Sprite):
+    def __init__(self, game, x, y):
+        # put it in the all sprites group immediately
+        self.groups = game.all_sprites
+
+        Sprite.__init__(self, self.groups) # initialize sprite
+
+        self.game = game # allow the player to access game
+
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(WHITE)
+
+        self.rect = self.image.get_rect()
+        self.hit_rect = PLAYER_HIT_RECT
+
+        self.vel = vec(0,0)
+        self.pos = vec(x * TILESIZE,y * TILESIZE)
+
+    def get_keys(self):
+        # reset v so it doesnt fly away
+        # listen for events specific to keys
+        # change velocity based on which key is pressed
+
+        self.vel = vec(0,0)
+        keys = pg.key.get_pressed() # get pressed keys
+
+        if keys[pg.K_LEFT] or keys[pg.K_a]: # left
+            self.vel.x = -PLAYER_SPEED
+        if keys[pg.K_RIGHT] or keys[pg.K_d]: # right
+            self.vel.x = PLAYER_SPEED
+        if keys[pg.K_DOWN] or keys[pg.K_s]: # down
+            self.vel.y = PLAYER_SPEED 
+        if keys[pg.K_UP] or keys[pg.K_w]:# and self.touching_ground # up
+            self.vel.y = -PLAYER_SPEED
+
+        # check to see if the player is mocing diagonally
+        if self.vel.x != 0 and self.vel.y != 0:
+            self.vel.normalize()
+
+    def handle_collision(self):
+        mob_hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
+
+        if mob_hits:
+            mob_hits[0].kill()
+            # print("killed em")
+
+    def update(self):
+        self.get_keys()
+        self.rect.center = self.pos
+        self.pos += self.vel * self.game.dt
+
+        self.hit_rect.centerx = self.pos.x
+        collide_with_walls(self, self.game.all_walls, 'x')
+        self.hit_rect.centery = self.pos.y
+        collide_with_walls(self, self.game.all_walls, 'y')
+        self.rect.center = self.hit_rect.center
+
+        self.vel.y -= GRAVITY * self.game.dt
+        
+        self.handle_collision()
+
+
+class Wall(Sprite):
+    def __init__(self, game, x, y):
+        # put it in the all sprites group immediately
+        self.groups = game.all_sprites, game.all_walls
+
+        Sprite.__init__(self, self.groups) # initialize sprite
+
+        self.game = game # allow the wall to access game
+
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(GREEN)
+
+        self.rect = self.image.get_rect()
+
+        self.x = x * TILESIZE
+        self.y = y * TILESIZE
+
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+class Mob(Sprite):
+    def __init__(self, game, x, y, color):
+        # put it in the all sprites group immediately
+        self.groups = game.all_sprites, game.all_mobs
+
+        Sprite.__init__(self, self.groups) # initialize sprite
+
+        self.game = game # allow the mob to access game
+
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(color)
+
+        self.rect = self.image.get_rect()
+
+        self.stored_speed = MOB_SPEED
+
+        self.vx, self.vy = self.stored_speed, self.stored_speed
+
+        self.x = x * TILESIZE
+        self.y = y * TILESIZE
+
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+    def handle_collision(self, axis):
+        wall_hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
+        mob_hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
+        
+        if wall_hits:
+            # self.stored_speed = min(self.stored_speed *  BOUNCE_FACTOR, MOB_MAX_SPEED)
+            if axis == "x": # only checking x axis
+                if self.vx > 0: # moving right
+                    # move it out of the wall so it doesnt detect twice
+                    self.rect.right = wall_hits[0].rect.left
+                    self.vx = -self.stored_speed
+                    return
+                if self.vx < 0: # moving left
+                    self.rect.left = wall_hits[0].rect.right
+                    self.vx = self.stored_speed
+                    return
+                return
+            elif axis == "y": # only checking y axis
+                if self.vy > 0: # moving up
+                    self.rect.bottom = wall_hits[0].rect.top
+                    self.vy = -self.stored_speed
+                    return
+                if self.vy < 0: # moving down
+                    self.rect.top = wall_hits[0].rect.bottom
+                    self.vy = self.stored_speed
+                    return
+            
+
+    def update(self):
+        # if self.rect.right > SCREEN_WIDTH or self.rect.x < 0:
+        #     self.vx *= -1
+        # if self.rect.bottom > SCREEN_HEIGHT or self.rect.y < 0:
+        #     self.vy *= -1
+
+        self.x += self.vx * self.game.dt
+        self.y += self.vy * self.game.dt
+
+        self.rect.x = self.x # move visual x to stored x
+        self.handle_collision("x")
+        self.rect.y = self.y # move visual y to stored y
