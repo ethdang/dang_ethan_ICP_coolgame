@@ -17,7 +17,7 @@ BLUE = (0,0,255)
 ######### player settings #########
 PLAYER_SPEED = 200
 PLAYER_JUMP = 500
-PLAYER_HIT_RECT = pg.Rect(0,0, TILESIZE - 5, TILESIZE - 5)
+PLAYER_HIT_RECT = pg.Rect(0,0, TILESIZE - 14, TILESIZE - 10)
 GRAVITY = 900
 
 ######### mob settings #########

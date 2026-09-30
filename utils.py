@@ -27,4 +27,5 @@ class Spritesheet:
         image.blit(self.spritesheet, (0,0), (x,y, width, height))
         new_image = pg.transform.scale(image, (width, height))
         image = new_image
+        image.set_colorkey(BLACK)
         return image

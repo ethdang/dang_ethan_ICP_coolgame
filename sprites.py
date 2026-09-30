@@ -42,6 +42,8 @@ def collide_with_walls(sprite, group, dir):
         elif sprite.touching_ground:
             sprite.touching_ground = False
 
+        sprite.hit_rect.centery -= 1
+
     if dir == 'y-ciel':
         hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect) 
 
@@ -52,8 +54,6 @@ def collide_with_walls(sprite, group, dir):
             sprite.vel.y = 0
             sprite.hit_rect.centery = sprite.pos.y
 
-
-        
 
 class Player(Sprite):
     def __init__(self, game, x, y):
@@ -66,7 +66,7 @@ class Player(Sprite):
 
         self.spritesheet = Spritesheet(path.join(self.game.image_dir, "sprite_sheet.png"))
         self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
-        # self.image.set_colorkey(BLACK) # set black pixels invisible
+        self.image.set_colorkey(BLACK) # set black pixels invisible
         # self.image = pg.Surface((TILESIZE, TILESIZE))
         # self.image.fill(WHITE)
 
@@ -76,33 +76,42 @@ class Player(Sprite):
         self.vel = vec(0,0)
         self.pos = vec(x * TILESIZE,y * TILESIZE)
 
+        # animation stuff
+        self.last_update = 0
+        self.current_frame = 0
+        self.load_images()
+
         self.touching_ground = False
 
     def get_keys(self):
         # reset v so it doesnt fly away
         # listen for events specific to keys
         # change velocity based on which key is pressed
+        self.state = "idle"
 
         self.vel = vec(0,self.vel.y)
         keys = pg.key.get_pressed() # get pressed keys
 
         if keys[pg.K_LEFT] or keys[pg.K_a]: # left
             self.vel.x = -PLAYER_SPEED
+            self.state = "move_left"
         if keys[pg.K_RIGHT] or keys[pg.K_d]: # right
             self.vel.x = PLAYER_SPEED
-        if keys[pg.K_DOWN] or keys[pg.K_s]: # down
-            self.vel.y = PLAYER_SPEED 
+            self.state = "move_left"
+        # if keys[pg.K_DOWN] or keys[pg.K_s]: # down
+        #     self.vel.y = PLAYER_SPEED 
         # if keys[pg.K_UP] or keys[pg.K_w]:# and self.touching_ground # up
         #     self.vel.y = -PLAYER_SPEED
 
         justpressedkeys = pg.key.get_just_pressed()
 
         if (justpressedkeys[pg.K_UP] or justpressedkeys[pg.K_w]) and self.touching_ground:
-            print("jump")
             self.vel.y -= PLAYER_JUMP
             self.touching_ground = False
+            self.state = "jumping"
         elif not self.touching_ground:
             self.vel.y += GRAVITY * self.game.dt
+            self.state = "falling"
 
     def handle_collision(self):
         mob_hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
@@ -111,9 +120,28 @@ class Player(Sprite):
             mob_hits[0].kill()
             # print("killed em")
 
+    def animate(self):
+        # use the time element to get now
+        now = pg.time.get_ticks()
+        if (self.state == "idle"):
+            if now - self.last_update > 350:
+                self.last_update = now
+                self.current_frame = (self.current_frame + 1) % len(self.idle_frames)
+                bottom = self.rect.bottom
+                self.image = self.idle_frames[self.current_frame]
+                self.rect = self.image.get_rect()
+                self.rect.bottom = bottom
+
+    def load_images(self):
+        self.idle_frames = [self.spritesheet.get_image(0,0,TILESIZE, TILESIZE),
+                            self.spritesheet.get_image(0,TILESIZE,TILESIZE, TILESIZE)
+                            ]
+        
     def update(self):
         self.get_keys()
 
+        self.animate()
+        
         self.rect.center = self.pos
         self.pos += self.vel * self.game.dt
 
