@@ -11,10 +11,10 @@ def collide_hit_rect(one, two):
     return one.hit_rect.colliderect(two.rect)
 
 def collide_with_walls(sprite, group, dir):
-     # me, wall, destroy, return if we actually collided
-    hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
-
     if dir == 'x': # checking for x collision
+        # me, wall, destroy, return if we actually collided
+        hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
+
         if hits:
             # if we are colliding from the right
             if hits[0].rect.centerx > sprite.hit_rect.centerx:
@@ -26,19 +26,34 @@ def collide_with_walls(sprite, group, dir):
             sprite.vel.x = 0
             sprite.hit_rect.centerx = sprite.pos.x
 
-    if dir == 'y': 
+    if dir == 'y-floor':
+        sprite.hit_rect.centery += 1
+        hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect) 
+
         if hits:
             if hits[0].rect.centery > sprite.hit_rect.centery:
                 sprite.pos.y = hits[0].rect.top - sprite.hit_rect.height / 2
+                # sprite.vel.y = 0
                 sprite.touching_ground = True
-            if hits[0].rect.centery < sprite.hit_rect.centery:
-                sprite.pos.y = hits[0].rect.bottom + sprite.hit_rect.height / 2
 
             sprite.vel.y = 0
             sprite.hit_rect.centery = sprite.pos.y
         
-        else:
+        elif sprite.touching_ground:
             sprite.touching_ground = False
+
+    if dir == 'y-ciel':
+        hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect) 
+
+        if hits:
+            if hits[0].rect.centery < sprite.hit_rect.centery: # ceiling
+                sprite.pos.y = hits[0].rect.bottom + sprite.hit_rect.height / 2
+
+            sprite.vel.y = 0
+            sprite.hit_rect.centery = sprite.pos.y
+
+
+        
 
 class Player(Sprite):
     def __init__(self, game, x, y):
@@ -84,17 +99,10 @@ class Player(Sprite):
 
         if (justpressedkeys[pg.K_UP] or justpressedkeys[pg.K_w]) and self.touching_ground:
             print("jump")
-            self.vel.y -= PLAYER_SPEED * 2
-        elif self.touching_ground:
-            self.touching_ground = True
-            self.vel.y = 0
-        else:
+            self.vel.y -= PLAYER_JUMP
             self.touching_ground = False
+        elif not self.touching_ground:
             self.vel.y += GRAVITY * self.game.dt
-
-        # check to see if the player is mocing diagonally
-        if self.vel.x != 0 and self.vel.y != 0:
-            self.vel.normalize()
 
     def handle_collision(self):
         mob_hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
@@ -105,7 +113,6 @@ class Player(Sprite):
 
     def update(self):
         self.get_keys()
-        print(self.touching_ground) 
 
         self.rect.center = self.pos
         self.pos += self.vel * self.game.dt
@@ -113,7 +120,8 @@ class Player(Sprite):
         self.hit_rect.centerx = self.pos.x
         collide_with_walls(self, self.game.all_walls, 'x')
         self.hit_rect.centery = self.pos.y
-        collide_with_walls(self, self.game.all_walls, 'y')
+        collide_with_walls(self, self.game.all_walls, 'y-floor')
+        collide_with_walls(self, self.game.all_walls, 'y-ciel')
         self.rect.center = self.hit_rect.center
         
         self.handle_collision()
