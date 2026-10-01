@@ -143,14 +143,14 @@ class Player(Sprite):
     def animateFrames(self, frames):
         now = pg.time.get_ticks()
 
-        if now - self.last_update > 350:
+        if now - self.last_update > 125:
             self.last_update = now
             self.current_frame = (self.current_frame + 1) % len(frames)
             bottom = self.rect.bottom
             self.image = frames[self.current_frame]
             self.rect = self.image.get_rect()
             self.rect.bottom = bottom
-            if self.facing_dir != self.previous_dir:
+            if self.facing_dir == -1:
                 self.image = pg.transform.flip(self.image, True, False)
 
 
@@ -162,7 +162,8 @@ class Player(Sprite):
         
         self.walk_frames = [self.spritesheet.get_image(TILESIZE * 4, 0 ,TILESIZE, TILESIZE),
                             self.spritesheet.get_image(TILESIZE * 5, 0 ,TILESIZE, TILESIZE),
-                            self.spritesheet.get_image(TILESIZE * 6, 0 ,TILESIZE, TILESIZE)
+                            self.spritesheet.get_image(TILESIZE * 6, 0 ,TILESIZE, TILESIZE),
+                            self.spritesheet.get_image(TILESIZE * 5, 0 ,TILESIZE, TILESIZE)
                             ]
 
         self.jump_frames = [self.spritesheet.get_image(TILESIZE * 2, 0, TILESIZE, TILESIZE)]
