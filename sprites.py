@@ -76,6 +76,9 @@ class Player(Sprite):
         self.vel = vec(0,0)
         self.pos = vec(x * TILESIZE,y * TILESIZE)
 
+        self.facing_dir = 1 # 1 is right, 0 center, -1 left
+        self.previous_dir = 1
+
         # animation stuff
         self.last_update = 0
         self.current_frame = 0
@@ -92,12 +95,17 @@ class Player(Sprite):
         self.vel = vec(0,self.vel.y)
         keys = pg.key.get_pressed() # get pressed keys
 
+        self.previous_dir = self.facing_dir
+
         if keys[pg.K_LEFT] or keys[pg.K_a]: # left
             self.vel.x = -PLAYER_SPEED
-            self.state = "move_left"
+            self.state = "walking"
+            self.facing_dir = -1
         if keys[pg.K_RIGHT] or keys[pg.K_d]: # right
             self.vel.x = PLAYER_SPEED
-            self.state = "move_left"
+            self.state = "walking"
+            self.facing_dir = 1
+
         # if keys[pg.K_DOWN] or keys[pg.K_s]: # down
         #     self.vel.y = PLAYER_SPEED 
         # if keys[pg.K_UP] or keys[pg.K_w]:# and self.touching_ground # up
@@ -113,6 +121,7 @@ class Player(Sprite):
             self.vel.y += GRAVITY * self.game.dt
             self.state = "falling"
 
+
     def handle_collision(self):
         mob_hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
 
@@ -122,21 +131,43 @@ class Player(Sprite):
 
     def animate(self):
         # use the time element to get now
-        now = pg.time.get_ticks()
         if (self.state == "idle"):
-            if now - self.last_update > 350:
-                self.last_update = now
-                self.current_frame = (self.current_frame + 1) % len(self.idle_frames)
-                bottom = self.rect.bottom
-                self.image = self.idle_frames[self.current_frame]
-                self.rect = self.image.get_rect()
-                self.rect.bottom = bottom
+            self.animateFrames(self.idle_frames)
+        elif (self.state == "walking" and self.touching_ground):
+            self.animateFrames(self.walk_frames)
+        elif (self.state == "falling"):
+            self.animateFrames(self.fall_frames)
+        elif (self.state == "jumping"):
+            self.animateFrames(self.jump_frames)
+
+    def animateFrames(self, frames):
+        now = pg.time.get_ticks()
+
+        if now - self.last_update > 350:
+            self.last_update = now
+            self.current_frame = (self.current_frame + 1) % len(frames)
+            bottom = self.rect.bottom
+            self.image = frames[self.current_frame]
+            self.rect = self.image.get_rect()
+            self.rect.bottom = bottom
+            if self.facing_dir != self.previous_dir:
+                self.image = pg.transform.flip(self.image, True, False)
+
+
 
     def load_images(self):
         self.idle_frames = [self.spritesheet.get_image(0,0,TILESIZE, TILESIZE),
-                            self.spritesheet.get_image(0,TILESIZE,TILESIZE, TILESIZE)
+                            self.spritesheet.get_image(TILESIZE,0,TILESIZE, TILESIZE)
                             ]
         
+        self.walk_frames = [self.spritesheet.get_image(TILESIZE * 4, 0 ,TILESIZE, TILESIZE),
+                            self.spritesheet.get_image(TILESIZE * 5, 0 ,TILESIZE, TILESIZE),
+                            self.spritesheet.get_image(TILESIZE * 6, 0 ,TILESIZE, TILESIZE)
+                            ]
+
+        self.jump_frames = [self.spritesheet.get_image(TILESIZE * 2, 0, TILESIZE, TILESIZE)]
+        self.fall_frames = [self.spritesheet.get_image(TILESIZE * 3, 0, TILESIZE, TILESIZE)]
+    
     def update(self):
         self.get_keys()
 
