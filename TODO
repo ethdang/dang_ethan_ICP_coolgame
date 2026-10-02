@@ -1,0 +1,12 @@
+- CLASS TODO - 
+SUMMARY: stuff that is probably going to be explained in class
+1. save data
+2. level physics
+
+- MY TODO -
+SUMMARY: get main mechanics of a game finished
+1. create camera that moves with player, camera bounds that it cannot pass, etc
+2. enemy movement besides bouncing around, and enemy animation 
+3. introduce health, player resource
+4. npc dialogue
+5. decide game idea/mechanic
