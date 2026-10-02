@@ -58,7 +58,7 @@ class Game:
         self.map = Map(path.join(self.game_dir, map))
 
     def new(self): # when we create or start up a new game
-        self.load_data("level1.txt")
+        self.load_data("_images/level_sprite_sheet.png")
         self.all_sprites = pg.sprite.Group() # group all sprites
         self.all_walls = pg.sprite.Group() # group all walls
         self.all_mobs = pg.sprite.Group() # group all mob

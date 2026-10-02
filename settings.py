@@ -11,7 +11,8 @@ BG_COLOR = (138, 205, 255)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255,0,0)
-GREEN = (49, 148, 55)
+LIGHT_GREEN = (49, 148, 55)
+GREEN = (0,255,0)
 BLUE = (0,0,255)
 
 ######### player settings #########

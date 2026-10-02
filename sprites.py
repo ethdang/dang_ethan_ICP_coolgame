@@ -145,13 +145,13 @@ class Player(Sprite):
 
         if now - self.last_update > 125:
             self.last_update = now
-            self.current_frame = (self.current_frame + 1) % len(frames)
+            self.current_frame = (self.current_frame + 1) % len(frames) # loop the frames
             bottom = self.rect.bottom
             self.image = frames[self.current_frame]
             self.rect = self.image.get_rect()
             self.rect.bottom = bottom
-            if self.facing_dir == -1:
-                self.image = pg.transform.flip(self.image, True, False)
+            if self.facing_dir == -1: # if our direction is not the default (1 facing right)
+                self.image = pg.transform.flip(self.image, True, False) # flip it
 
 
 
@@ -197,7 +197,7 @@ class Wall(Sprite):
         self.game = game # allow the wall to access game
 
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(GREEN)
+        self.image.fill(LIGHT_GREEN)
 
         self.rect = self.image.get_rect()
 
@@ -271,3 +271,4 @@ class Mob(Sprite):
         self.rect.x = self.x # move visual x to stored x
         self.handle_collision("x")
         self.rect.y = self.y # move visual y to stored y
+        self.handle_collision("y")

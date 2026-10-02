@@ -5,18 +5,29 @@ from math import *
 class Map:
     def __init__(self, filename):
         self.data = []
+        self.levelspritesheet = pg.image.load(filename).convert()
 
-        # open up a file name as f
-        with open(filename, "rt") as f: 
-            for line in f:
-                # copy each line of the file into our own list
-                self.data.append(line.strip())
+        for y in range(self.levelspritesheet.height):
+            cur_line = "" # reset current line
 
-        self.tilewidth = len(self.data[0]) # length of first line
-        self.tileheight = len(self.data) # length of list
+            for x in range(self.levelspritesheet.width):
+                found_color = self.levelspritesheet.get_at((x,y))
+                if found_color == WHITE: # wall
+                    cur_line += "0"
+                elif found_color == BLACK: # nothing
+                    cur_line += "."
+                elif found_color == GREEN: # player
+                    cur_line += "P"
+                elif found_color == RED: # enemy
+                    cur_line += "e"
 
-        self.width = self.tilewidth * TILESIZE
-        self.height = self.tileheight * TILESIZE
+            self.data.append(cur_line) # add our line STRING into our map LIST
+
+            self.tilewidth = len(self.data[0]) # length of first line
+            self.tileheight = len(self.data) # length of list
+
+            self.width = self.tilewidth * TILESIZE
+            self.height = self.tileheight * TILESIZE
 
 class Spritesheet:
     def __init__(self, filename):
