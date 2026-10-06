@@ -77,6 +77,8 @@ class Game:
                 if tile == "P": # player spawn
                     self.player = Player(self, col, row) # instantiate the player
 
+        # self.camera = self.player
+
 
     def run(self): # main game loop
         self.playing = True
@@ -95,13 +97,23 @@ class Game:
 
                 self.running = False # output: game is no longer running
 
+    def draw_text(self, text, size, color, x, y):
+        font_name = pg.font.match_font('ariel')
+        font = pg.font.Font(font_name, size)
+        text_surface = font.render(text, True, color)
+        text_rect =  text_surface.get_rect()
+        text_rect.midtop = (x,y)
+        self.screen.blit(text_surface, text_rect)
+
     def update(self):
         self.all_sprites.update()
 
-    def draw(self):
+    def draw(self): # higher up draws first
         self.screen.fill(BG_COLOR) # use background color
 
         self.all_sprites.draw(self.screen) # draw all sprites
+
+        self.draw_text("Framex per second: " + str(floor(1/self.dt)), 24, WHITE, SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
         pg.display.flip()
 
 if __name__ == "__main__": # only run if this is the main file

@@ -154,7 +154,6 @@ class Player(Sprite):
                 self.image = pg.transform.flip(self.image, True, False) # flip it
 
 
-
     def load_images(self):
         self.idle_frames = [self.spritesheet.get_image(0,0,TILESIZE, TILESIZE),
                             self.spritesheet.get_image(TILESIZE,0,TILESIZE, TILESIZE)
@@ -187,6 +186,8 @@ class Player(Sprite):
         self.handle_collision()
 
 
+
+
 class Wall(Sprite):
     def __init__(self, game, x, y):
         # put it in the all sprites group immediately
@@ -206,6 +207,12 @@ class Wall(Sprite):
 
         self.rect.x = self.x
         self.rect.y = self.y
+
+        # self.camera_offset = vec(self.x - self.game.player.pos.y
+
+    def update(self):
+        self.rect.x = self.game.player.pos.x
+        # self.rect.y = self.y - self.game.player.pos.y
 
 class Mob(Sprite):
     def __init__(self, game, x, y, color):
