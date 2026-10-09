@@ -167,7 +167,7 @@ class Player(Sprite):
 
         self.jump_frames = [self.spritesheet.get_image(TILESIZE * 2, 0, TILESIZE, TILESIZE)]
         self.fall_frames = [self.spritesheet.get_image(TILESIZE * 3, 0, TILESIZE, TILESIZE)]
-    
+
     def update(self):
         self.get_keys()
 
@@ -184,10 +184,7 @@ class Player(Sprite):
         self.rect.center = self.hit_rect.center
         
         self.handle_collision()
-
-
-
-
+        
 class Wall(Sprite):
     def __init__(self, game, x, y):
         # put it in the all sprites group immediately
@@ -205,14 +202,15 @@ class Wall(Sprite):
         self.x = x * TILESIZE
         self.y = y * TILESIZE
 
+        self.pos = vec(self.x, self.y)
+
         self.rect.x = self.x
         self.rect.y = self.y
 
-        # self.camera_offset = vec(self.x - self.game.player.pos.y
+        self.camera_offset = self.pos - self.game.camera.pos
 
     def update(self):
-        self.rect.x = self.game.player.pos.x
-        # self.rect.y = self.y - self.game.player.pos.y
+        self.rect = self.game.camera.pos - self.camera_offset
 
 class Mob(Sprite):
     def __init__(self, game, x, y, color):
@@ -229,14 +227,36 @@ class Mob(Sprite):
         self.rect = self.image.get_rect()
 
         self.stored_speed = MOB_SPEED
+        
+        self.spritesheet = Spritesheet(path.join(self.game.image_dir, "sprite_sheet.png"))
+        self.last_update = 0
+        self.current_frame = 0
+        self.load_images()
 
         self.vx, self.vy = self.stored_speed, self.stored_speed
 
         self.x = x * TILESIZE
         self.y = y * TILESIZE
 
+        self.pos = vec(self.x, self.y)
+
         self.rect.x = self.x
         self.rect.y = self.y
+
+    def load_images(self):
+            self.idle_frames = [self.spritesheet.get_image(0,0,TILESIZE, TILESIZE),
+                                self.spritesheet.get_image(TILESIZE,0,TILESIZE, TILESIZE)
+                                ]
+            
+            self.walk_frames = [self.spritesheet.get_image(TILESIZE * 4, 0 ,TILESIZE, TILESIZE),
+                                self.spritesheet.get_image(TILESIZE * 5, 0 ,TILESIZE, TILESIZE),
+                                self.spritesheet.get_image(TILESIZE * 6, 0 ,TILESIZE, TILESIZE),
+                                self.spritesheet.get_image(TILESIZE * 5, 0 ,TILESIZE, TILESIZE)
+                                ]
+    
+            self.jump_frames = [self.spritesheet.get_image(TILESIZE * 2, 0, TILESIZE, TILESIZE)]
+            self.fall_frames = [self.spritesheet.get_image(TILESIZE * 3, 0, TILESIZE, TILESIZE)]
+    
 
     def handle_collision(self, axis):
         wall_hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
@@ -264,18 +284,49 @@ class Mob(Sprite):
                     self.rect.top = wall_hits[0].rect.bottom
                     self.vy = self.stored_speed
                     return
-            
-
+        
     def update(self):
         # if self.rect.right > SCREEN_WIDTH or self.rect.x < 0:
         #     self.vx *= -1
         # if self.rect.bottom > SCREEN_HEIGHT or self.rect.y < 0:
         #     self.vy *= -1
 
-        self.x += self.vx * self.game.dt
-        self.y += self.vy * self.game.dt
+        # self.x += self.vx * self.game.dt
+        # self.y += self.vy * self.game.dt
 
-        self.rect.x = self.x # move visual x to stored x
-        self.handle_collision("x")
-        self.rect.y = self.y # move visual y to stored y
-        self.handle_collision("y")
+        # self.rect.x = self.x # move visual x to stored x
+        # self.handle_collision("x")
+        # self.rect.y = self.y # move visual y to stored y
+        # self.handle_collision("y")
+        pass
+
+class Camera(Sprite):
+    def __init__(self, game, x, y, color):
+            # put it in the all sprites group immediately
+            self.groups = game.all_sprites
+    
+            Sprite.__init__(self, self.groups) # initialize sprite
+    
+            self.game = game # allow the mob to access game
+    
+            self.image = pg.Surface((TILESIZE, TILESIZE))
+            self.image.fill(color)
+    
+            self.rect = self.image.get_rect()
+    
+            self.x = x * TILESIZE
+            self.y = y * TILESIZE
+
+            self.pos = vec(self.x,self.y)
+    
+            self.rect.x = self.x
+            self.rect.y = self.y
+
+            self.player = 0
+
+    def update(self):
+        if self.player == 0:
+            self.player = self.game.player
+
+        self.pos = self.player.pos
+        self.rect = self.player.rect

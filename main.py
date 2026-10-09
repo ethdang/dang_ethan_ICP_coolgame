@@ -30,6 +30,26 @@ from utils import *
         graphics - things are drawn, sound - jump,
         haptics - vibration, etc
 
+    CLASH ROYALE
+
+        GOALS:
+            destroy the opponent's towers
+            become the best
+        
+        RULES:
+            you can only place on your side
+            you have a limited amount of elixer
+
+        FEEDBACK:
+            place a card and it appears on screen
+            elixer bar
+            tower health
+
+        FREEDOM:
+            you can build your deck however you want
+            place any card in your deck
+            choose your own strategy
+
 '''
 
 class Game: 
@@ -62,6 +82,8 @@ class Game:
         self.all_sprites = pg.sprite.Group() # group all sprites
         self.all_walls = pg.sprite.Group() # group all walls
         self.all_mobs = pg.sprite.Group() # group all mob
+
+        self.camera = Camera(self, 0,0, WHITE)
 
         for row, tiles in enumerate(self.map.data):
             for col, tile in enumerate(tiles):
