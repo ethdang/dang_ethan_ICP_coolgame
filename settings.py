@@ -1,7 +1,7 @@
 import pygame as pg
 
 ######### game #########
-FPS = 120
+FPS = 20
 
 ######### visuals #########
 TILESIZE = 32
