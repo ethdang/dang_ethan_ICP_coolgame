@@ -87,12 +87,24 @@ class Player(Sprite):
         self.touching_ground = False
 
     def get_keys(self):
-        # Keep the player's horizontal position fixed while the camera moves.
+        # reset v so it doesnt fly away
+        # listen for events specific to keys
+        # change velocity based on which key is pressed
         self.state = "idle"
 
         self.vel = vec(0,self.vel.y)
+        keys = pg.key.get_pressed() # get pressed keys
 
         self.previous_dir = self.facing_dir
+
+        if keys[pg.K_LEFT] or keys[pg.K_a]: # left
+            self.vel.x = -PLAYER_SPEED
+            self.state = "walking"
+            self.facing_dir = -1
+        if keys[pg.K_RIGHT] or keys[pg.K_d]: # right
+            self.vel.x = PLAYER_SPEED
+            self.state = "walking"
+            self.facing_dir = 1
 
         # if keys[pg.K_DOWN] or keys[pg.K_s]: # down
         #     self.vel.y = PLAYER_SPEED 
@@ -192,17 +204,13 @@ class Wall(Sprite):
 
         self.pos = vec(self.x, self.y)
 
-        self.rect.x = self.pos.x
-        self.rect.y = self.pos.y
+        self.rect.x = self.x
+        self.rect.y = self.y
 
         self.camera_offset = self.pos - self.game.camera.pos
 
     def update(self):
-        self.pos.x = self.game.camera.pos.x - self.camera_offset.x
-        self.pos.y = self.game.camera.pos.y - self.camera_offset.y
-
-        self.rect.x = self.pos.x
-        self.rect.y = self.pos.y
+        self.rect = self.game.camera.pos - self.camera_offset
 
 class Mob(Sprite):
     def __init__(self, game, x, y, color):
@@ -316,16 +324,9 @@ class Camera(Sprite):
 
             self.player = 0
 
-    def get_keys(self):
-        self.vel = vec(0, 0)
-        keys = pg.key.get_pressed()
-
-        if keys[pg.K_LEFT] or keys[pg.K_a]:
-            self.vel.x = -PLAYER_SPEED
-        if keys[pg.K_RIGHT] or keys[pg.K_d]:
-            self.vel.x = PLAYER_SPEED
-
     def update(self):
-        self.get_keys()
-        self.pos += self.vel * self.game.dt
-        self.rect.center = self.pos
+        if self.player == 0:
+            self.player = self.game.player
+
+        self.pos = self.player.pos
+        self.rect = self.player.rect

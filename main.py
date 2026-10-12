@@ -83,7 +83,7 @@ class Game:
         self.all_walls = pg.sprite.Group() # group all walls
         self.all_mobs = pg.sprite.Group() # group all mob
 
-        self.camera = Camera(self, 15,15, WHITE)
+        self.camera = Camera(self, 0,0, WHITE)
 
         for row, tiles in enumerate(self.map.data):
             for col, tile in enumerate(tiles):
