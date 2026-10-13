@@ -1,5 +1,6 @@
 import pygame as pg
 from settings import *
+from playerResource import * # access player resource
 from pygame.sprite import Sprite # import sprite
 from utils import *
 
@@ -137,10 +138,17 @@ class Player(Sprite):
 
     def handle_collision(self):
         mob_hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
+        collectable_hits = pg.sprite.spritecollide(self, self.game.all_collectables, False)
 
         if mob_hits:
             mob_hits[0].kill()
             # print("killed em")
+        
+        if collectable_hits:
+            hit = collectable_hits[0]
+            COLLECTED[hit.collectableID] += hit.value # add value to dict by id
+            hit.kill() # get rid of coin
+
 
     def animate(self):
         # use the time element to get now
@@ -283,7 +291,7 @@ class Mob(Sprite):
 
         if self.pos.y < obj.pos.y:
             self.vel.y = self.speed
-        elif self.pos.y > obj.pos.x:
+        elif self.pos.y > obj.pos.y:
             self.vel.y = -self.speed
         else:
             self.vel.y = 0
@@ -300,29 +308,24 @@ class Mob(Sprite):
         self.hit_rect.centery = self.pos.y
         collide_with_walls(self, self.game.all_walls, 'y')
 
-class Collectable(Sprite):
-    def __init__(self, game, x, y, color, collectableID, amt):
+class Collectable(Sprite): # later on... sprite instead of color
+    def __init__(self, game, x, y, color, collectableID, value):
         self.groups = game.all_sprites, game.all_collectables
-
-        self.groups = game.all_sprites, game.all_walls
-
         Sprite.__init__(self, self.groups) # initialize sprite
-
         self.game = game # allow the wall to access game
 
-        self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(LIGHT_GREEN)
+        self.collectableID = collectableID # use an id for multiple collectable types
+        self.value = value
 
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(color)
         self.rect = self.image.get_rect()
 
         self.x = x * TILESIZE
         self.y = y * TILESIZE
-
         self.pos = vec(self.x, self.y)
-
         self.rect.x = self.x
         self.rect.y = self.y
-
 
 
 class Camera(Sprite):

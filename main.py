@@ -8,6 +8,7 @@ from os import path
 from sprites import *
 # import settings so we can access our settings and use MODULARITY
 from settings import *
+from playerResource import *
 from utils import *
 
 
@@ -82,6 +83,7 @@ class Game:
         self.all_sprites = pg.sprite.Group() # group all sprites
         self.all_walls = pg.sprite.Group() # group all walls
         self.all_mobs = pg.sprite.Group() # group all mob
+        self.all_collectables = pg.sprite.Group() # group all collectable
 
         # self.camera = Camera(self, 0,0, WHITE)
 
@@ -89,10 +91,10 @@ class Game:
             for col, tile in enumerate(tiles):
                 if tile == "0": # wall
                     Wall(self, col, row)
-                if tile == "e": # mob spawn
+                if tile == "E": # mob spawn
                     Mob(self, col, row, RED)
-                if tile == "b":
-                    Mob(self, col, row, BLUE)
+                if tile == "C":
+                    Collectable(self, col, row, BLUE, 'coin', 1)
         # instantiate after the walls to appear ABOVE the walls
         for row, tiles in enumerate (self.map.data):
             for col, tile in enumerate(tiles):
@@ -136,6 +138,7 @@ class Game:
         self.all_sprites.draw(self.screen) # draw all sprites
 
         self.draw_text("Framex per second: " + str(floor(1/self.dt)), 24, WHITE, SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
+        self.draw_text("moneys: " + str(COLLECTED["coin"]), 24, WHITE, SCREEN_HEIGHT/5, SCREEN_HEIGHT/5)
         pg.display.flip()
 
 if __name__ == "__main__": # only run if this is the main file

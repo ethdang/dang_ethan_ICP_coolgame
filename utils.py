@@ -15,11 +15,11 @@ class Map:
                 if found_color == WHITE: # wall
                     cur_line += "0"
                 elif found_color == BLACK: # nothing
-                    cur_line += "."
+                    cur_line += "C"
                 elif found_color == GREEN: # player
                     cur_line += "P"
                 elif found_color == RED: # enemy
-                    cur_line += "e"
+                    cur_line += "E"
 
             self.data.append(cur_line) # add our line STRING into our map LIST
 
