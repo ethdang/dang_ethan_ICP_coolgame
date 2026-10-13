@@ -53,6 +53,19 @@ def collide_with_walls(sprite, group, dir):
 
             sprite.vel.y = 0
             sprite.hit_rect.centery = sprite.pos.y
+    if dir == 'y':
+        hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
+        
+        if hits:
+            # if we are colliding from the right
+            if hits[0].rect.centery > sprite.hit_rect.centery:
+                # reposition sprite to the left side of the wall
+                sprite.pos.y = hits[0].rect.top - sprite.hit_rect.height / 2
+            if hits[0].rect.centery < sprite.hit_rect.centery:
+                sprite.pos.y = hits[0].rect.bottom + sprite.hit_rect.height / 2
+
+            sprite.vel.y = 0
+            sprite.hit_rect.centery = sprite.pos.y
 
 
 class Player(Sprite):
@@ -207,11 +220,8 @@ class Wall(Sprite):
         self.rect.x = self.x
         self.rect.y = self.y
 
-        self.camera_offset = self.pos - self.game.camera.pos
-
-    def update(self):
-        self.rect = self.game.camera.pos - self.camera_offset
-
+        # self.camera_offset = self.pos - self.game.camera.pos
+        
 class Mob(Sprite):
     def __init__(self, game, x, y, color):
         # put it in the all sprites group immediately
@@ -226,22 +236,25 @@ class Mob(Sprite):
 
         self.rect = self.image.get_rect()
 
-        self.stored_speed = MOB_SPEED
+        self.speed = MOB_SPEED
         
         self.spritesheet = Spritesheet(path.join(self.game.image_dir, "sprite_sheet.png"))
         self.last_update = 0
         self.current_frame = 0
         self.load_images()
 
-        self.vx, self.vy = self.stored_speed, self.stored_speed
-
         self.x = x * TILESIZE
         self.y = y * TILESIZE
 
         self.pos = vec(self.x, self.y)
+        self.vel = vec(0,0)
 
         self.rect.x = self.x
         self.rect.y = self.y
+
+        self.hit_rect = MOB_HIT_RECT
+
+        self.player = 0
 
     def load_images(self):
             self.idle_frames = [self.spritesheet.get_image(0,0,TILESIZE, TILESIZE),
@@ -256,49 +269,61 @@ class Mob(Sprite):
     
             self.jump_frames = [self.spritesheet.get_image(TILESIZE * 2, 0, TILESIZE, TILESIZE)]
             self.fall_frames = [self.spritesheet.get_image(TILESIZE * 3, 0, TILESIZE, TILESIZE)]
-    
+                
+    # uses autocomplete by creating a chase method using pos vectors and chase obj
+    def chase(self, obj):
+        if self.pos.x < obj.pos.x:
+            self.vel.x = self.speed
+            self.dir = "right"
+        elif self.pos.x > obj.pos.x:
+            self.vel.x = -self.speed
+            self.dir = "left"
+        else:
+            self.vel.x = 0
 
-    def handle_collision(self, axis):
-        wall_hits = pg.sprite.spritecollide(self, self.game.all_walls, False)
-        mob_hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
-        
-        if wall_hits:
-            # self.stored_speed = min(self.stored_speed *  BOUNCE_FACTOR, MOB_MAX_SPEED)
-            if axis == "x": # only checking x axis
-                if self.vx > 0: # moving right
-                    # move it out of the wall so it doesnt detect twice
-                    self.rect.right = wall_hits[0].rect.left
-                    self.vx = -self.stored_speed
-                    return
-                if self.vx < 0: # moving left
-                    self.rect.left = wall_hits[0].rect.right
-                    self.vx = self.stored_speed
-                    return
-                return
-            elif axis == "y": # only checking y axis
-                if self.vy > 0: # moving up
-                    self.rect.bottom = wall_hits[0].rect.top
-                    self.vy = -self.stored_speed
-                    return
-                if self.vy < 0: # moving down
-                    self.rect.top = wall_hits[0].rect.bottom
-                    self.vy = self.stored_speed
-                    return
-        
+        if self.pos.y < obj.pos.y:
+            self.vel.y = self.speed
+        elif self.pos.y > obj.pos.x:
+            self.vel.y = -self.speed
+        else:
+            self.vel.y = 0
+
     def update(self):
-        # if self.rect.right > SCREEN_WIDTH or self.rect.x < 0:
-        #     self.vx *= -1
-        # if self.rect.bottom > SCREEN_HEIGHT or self.rect.y < 0:
-        #     self.vy *= -1
+        if self.player == 0:
+            self.player =  self.game.player
 
-        # self.x += self.vx * self.game.dt
-        # self.y += self.vy * self.game.dt
+        self.chase(self.game.player)
+        self.rect.center = self.pos
+        self.pos += self.vel * self.game.dt
+        self.hit_rect.centerx = self.pos.x
+        collide_with_walls(self, self.game.all_walls, 'x')
+        self.hit_rect.centery = self.pos.y
+        collide_with_walls(self, self.game.all_walls, 'y')
 
-        # self.rect.x = self.x # move visual x to stored x
-        # self.handle_collision("x")
-        # self.rect.y = self.y # move visual y to stored y
-        # self.handle_collision("y")
-        pass
+class Collectable(Sprite):
+    def __init__(self, game, x, y, color, collectableID, amt):
+        self.groups = game.all_sprites, game.all_collectables
+
+        self.groups = game.all_sprites, game.all_walls
+
+        Sprite.__init__(self, self.groups) # initialize sprite
+
+        self.game = game # allow the wall to access game
+
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(LIGHT_GREEN)
+
+        self.rect = self.image.get_rect()
+
+        self.x = x * TILESIZE
+        self.y = y * TILESIZE
+
+        self.pos = vec(self.x, self.y)
+
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+
 
 class Camera(Sprite):
     def __init__(self, game, x, y, color):

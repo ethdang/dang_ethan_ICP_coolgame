@@ -23,7 +23,7 @@ GRAVITY = 900
 
 ######### mob settings #########
 MOB_SPEED = 150
-
+MOB_HIT_RECT = pg.Rect(0,0, TILESIZE - 10, TILESIZE - 10)
 ######### screen window #########
 SCREEN_WIDTH = 1024 # width of screen
 SCREEN_HEIGHT = 768 # height of screen
