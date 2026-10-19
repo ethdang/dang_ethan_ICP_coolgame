@@ -105,6 +105,9 @@ class Game:
 
         # self.camera = self.player
 
+        pg.mixer.music.load(path.join(self.sound_dir, "background_music.mp3"))
+        pg.mixer.music.play(loops=-1)
+
 
     def run(self): # main game loop
         self.playing = True
