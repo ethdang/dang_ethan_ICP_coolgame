@@ -149,6 +149,8 @@ class Player(Sprite):
             COLLECTED[hit.collectableID] += hit.value # add value to dict by id
             hit.kill() # get rid of coin
 
+            self.game.coin_collect.play()
+
 
     def animate(self):
         # use the time element to get now
@@ -231,7 +233,7 @@ class Wall(Sprite):
         # self.camera_offset = self.pos - self.game.camera.pos
         
 class Mob(Sprite):
-    def __init__(self, game, x, y, color):
+    def __init__(self, game, x, y):
         # put it in the all sprites group immediately
         self.groups = game.all_sprites, game.all_mobs
 
@@ -240,13 +242,15 @@ class Mob(Sprite):
         self.game = game # allow the mob to access game
 
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(color)
 
         self.rect = self.image.get_rect()
 
         self.speed = MOB_SPEED
+
+        self.spritesheet = Spritesheet(path.join(self.game.image_dir, "enemy.png"))
+        self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
+        self.image.set_colorkey(BLACK) # set black pixels invisible
         
-        self.spritesheet = Spritesheet(path.join(self.game.image_dir, "sprite_sheet.png"))
         self.last_update = 0
         self.current_frame = 0
         self.load_images()

@@ -74,8 +74,10 @@ class Game:
     def load_data(self, map):
         self.game_dir = path.dirname(__file__)
         self.image_dir = path.join(self.game_dir, '_images')
+
+        # sound handling
         self.sound_dir = path.join(self.game_dir, '_audio')
-    
+        self.coin_collect = pg.mixer.Sound(path.join(self.sound_dir, "coin_collect.wav"))
         self.map = Map(path.join(self.game_dir, map))
 
     def new(self): # when we create or start up a new game
@@ -92,7 +94,7 @@ class Game:
                 if tile == "0": # wall
                     Wall(self, col, row)
                 if tile == "E": # mob spawn
-                    Mob(self, col, row, RED)
+                    Mob(self, col, row)
                 if tile == "C":
                     Collectable(self, col, row, BLUE, 'coin', 1)
         # instantiate after the walls to appear ABOVE the walls
