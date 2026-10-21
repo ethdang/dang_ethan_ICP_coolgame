@@ -120,14 +120,7 @@ class Player(Sprite):
             self.state = "walking"
             self.facing_dir = 1
 
-        # if keys[pg.K_DOWN] or keys[pg.K_s]: # down
-        #     self.vel.y = PLAYER_SPEED 
-        # if keys[pg.K_UP] or keys[pg.K_w]:# and self.touching_ground # up
-        #     self.vel.y = -PLAYER_SPEED
-
-        justpressedkeys = pg.key.get_just_pressed()
-
-        if (justpressedkeys[pg.K_UP] or justpressedkeys[pg.K_w]) and self.touching_ground:
+        if (keys[pg.K_UP] or keys[pg.K_w]) and self.touching_ground: # if up is pressed and touching ground
             self.vel.y -= PLAYER_JUMP
             self.touching_ground = False
             self.state = "jumping"
@@ -135,6 +128,21 @@ class Player(Sprite):
             self.vel.y += GRAVITY * self.game.dt
             self.state = "falling"
 
+
+        # if keys[pg.K_DOWN] or keys[pg.K_s]: # down
+        #     self.vel.y = PLAYER_SPEED 
+        # if keys[pg.K_UP] or keys[pg.K_w]:# and self.touching_ground # up
+        #     self.vel.y = -PLAYER_SPEED
+
+        # justpressedkeys = pg.key.get_just_pressed()
+
+        # if (justpressedkeys[pg.K_UP] or justpressedkeys[pg.K_w]) and self.touching_ground:
+        #     self.vel.y -= PLAYER_JUMP
+        #     self.touching_ground = False
+        #     self.state = "jumping"
+        # elif not self.touching_ground:
+        #     self.vel.y += GRAVITY * self.game.dt
+        #     self.state = "falling"
 
     def handle_collision(self):
         mob_hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)

@@ -71,9 +71,8 @@ class Game:
 
         self.clock = pg.time.Clock() # add clock
 
-
-        self.high_score = 0
-        self.score = 0
+        self.high_score = 0 # store high score
+        self.score = 0 # score current score
 
     def load_data(self, map):
         self.game_dir = path.dirname(__file__)
@@ -86,9 +85,9 @@ class Game:
 
         self.game_save_file = path.join(self.game_dir, "highscore.txt")
 
-        try:
+        try: # try excpetion blocks help us debug
             with open(self.game_save_file, 'x', encoding = "utf-8") as file:
-                file.write("new file")
+                file.write("new file") # no file exists? create a new file
             print("file created")
         except FileExistsError:
             print("file already exists")
@@ -144,7 +143,7 @@ class Game:
                 if (self.score > self.high_score):
                     with open(path.join(self.game_dir, self.game_save_file), 'w') as file:
                         file.write(str(self.score))
-                        
+
                 if self.playing:
                     self.playing = False # output: game is no longer playign
 
@@ -152,8 +151,8 @@ class Game:
                
 
     def draw_text(self, text, size, color, x, y):
-        font_name = pg.font.match_font('ariel')
-        font = pg.font.Font(font_name, size)
+        font_name = pg.font.match_font('ariel') # get font
+        font = pg.font.Font(font_name, size) # set font
         text_surface = font.render(text, True, color)
         text_rect =  text_surface.get_rect()
         text_rect.midtop = (x,y)
