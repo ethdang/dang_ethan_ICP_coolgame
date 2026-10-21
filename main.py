@@ -71,6 +71,10 @@ class Game:
 
         self.clock = pg.time.Clock() # add clock
 
+
+        self.high_score = 0
+        self.score = 0
+
     def load_data(self, map):
         self.game_dir = path.dirname(__file__)
         self.image_dir = path.join(self.game_dir, '_images')
@@ -79,6 +83,22 @@ class Game:
         self.sound_dir = path.join(self.game_dir, '_audio')
         self.coin_collect = pg.mixer.Sound(path.join(self.sound_dir, "coin_collect.wav"))
         self.map = Map(path.join(self.game_dir, map))
+
+        self.game_save_file = path.join(self.game_dir, "highscore.txt")
+
+        try:
+            with open(self.game_save_file, 'x', encoding = "utf-8") as file:
+                file.write("new file")
+            print("file created")
+        except FileExistsError:
+            print("file already exists")
+
+        with open(self.game_save_file, 'r') as file:
+            try:
+                self.high_score = int(file.read())
+            except:
+                self.high_score = 0 # set highscore to 0 if not found
+                print("high score set to 0")
 
     def new(self): # when we create or start up a new game
         self.load_data("_images/level_sprite_sheet.png")
@@ -121,10 +141,15 @@ class Game:
     def events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT: # input: player QUITs the game
+                if (self.score > self.high_score):
+                    with open(path.join(self.game_dir, self.game_save_file), 'w') as file:
+                        file.write(str(self.score))
+                        
                 if self.playing:
                     self.playing = False # output: game is no longer playign
 
                 self.running = False # output: game is no longer running
+               
 
     def draw_text(self, text, size, color, x, y):
         font_name = pg.font.match_font('ariel')
@@ -143,7 +168,9 @@ class Game:
         self.all_sprites.draw(self.screen) # draw all sprites
 
         self.draw_text("Framex per second: " + str(floor(1/self.dt)), 24, WHITE, SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
-        self.draw_text("moneys: " + str(COLLECTED["coin"]), 24, WHITE, SCREEN_HEIGHT/5, SCREEN_HEIGHT/5)
+        self.draw_text("moneys: " + str(COLLECTED["coin"]), 24, WHITE, SCREEN_WIDTH/12, SCREEN_HEIGHT/8)
+        self.draw_text("score: " + str(self.score), 24, WHITE, SCREEN_WIDTH/12, SCREEN_HEIGHT/10)
+        self.draw_text("high score: " + str(self.high_score), 24, WHITE, SCREEN_WIDTH/12, SCREEN_HEIGHT/12)
         pg.display.flip()
 
 if __name__ == "__main__": # only run if this is the main file

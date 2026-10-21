@@ -148,7 +148,7 @@ class Player(Sprite):
             hit = collectable_hits[0]
             COLLECTED[hit.collectableID] += hit.value # add value to dict by id
             hit.kill() # get rid of coin
-
+            self.game.score += 1
             self.game.coin_collect.play()
 
 
