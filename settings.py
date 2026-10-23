@@ -13,6 +13,7 @@ WHITE = (255, 255, 255)
 RED = (255,0,0)
 LIGHT_GREEN = (49, 148, 55)
 GREEN = (0,255,0)
+YELLOW = (0,255,255)
 BLUE = (0,0,255)
 
 ######### player settings #########

@@ -105,6 +105,7 @@ class Game:
         self.all_walls = pg.sprite.Group() # group all walls
         self.all_mobs = pg.sprite.Group() # group all mob
         self.all_collectables = pg.sprite.Group() # group all collectable
+        self.all_particles = pg.sprite.Group() # group all particles
 
         # self.camera = Camera(self, 0,0, WHITE)
 

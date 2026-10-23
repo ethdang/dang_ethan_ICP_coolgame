@@ -5,6 +5,7 @@ from pygame.sprite import Sprite # import sprite
 from utils import *
 
 from os import path # import path from our operating system
+from random import * # get random
 
 vec = pg.math.Vector2
 
@@ -155,6 +156,10 @@ class Player(Sprite):
         if collectable_hits:
             hit = collectable_hits[0]
             COLLECTED[hit.collectableID] += hit.value # add value to dict by id
+
+            for i in range(10):
+                Particle(self.game, hit.pos.x, hit.pos.y)
+            
             hit.kill() # get rid of coin
             self.game.score += 1
             self.game.coin_collect.play()
@@ -238,7 +243,50 @@ class Wall(Sprite):
         self.rect.x = self.x
         self.rect.y = self.y
 
-        # self.camera_offset = self.pos - self.game.camera.pos
+class Particle(Sprite):
+    def __init__(self, game, x, y):
+        # put it in the all sprites group immediately
+        self.groups = game.all_sprites, game.all_particles
+
+        Sprite.__init__(self, self.groups) # initialize sprite
+
+        self.game = game # allow the wall to access game
+
+        self.image = pg.Surface((TILESIZE / 8, TILESIZE / 8)) # make it small
+        self.image.fill(WHITE)
+
+        self.rect = self.image.get_rect()
+        # need to make it spawn at player and not visually at top left corner
+        
+        self.speed = randint(1, 5)
+        
+        self.x = x # don't multiply by tile size because we are alr passing in location
+        self.y = y
+
+        self.pos = vec(self.x, self.y)
+
+        # timer will start the moment it is instantiated
+        self.countdown = Cooldown(200) # in milli seconds
+        self.countdown.event_time = floor(pg.time.get_ticks()/1000)
+
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+        self.triggeredParticle = 0
+
+    def update(self):
+        if not self.triggeredParticle:
+            self.countdown.start()
+            self.triggeredParticle = True
+
+        self.countdown.ticking()
+        self.rect.x += self.speed * randint(-5, 5)
+        self.rect.y += self.speed * randint(-5, 5)
+
+        # if it has existed longer than 3 seconds kill
+        if self.countdown.ready():
+            print("kil")
+            self.kill()
         
 class Mob(Sprite):
     def __init__(self, game, x, y):
