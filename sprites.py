@@ -231,7 +231,8 @@ class Wall(Sprite):
         self.game = game # allow the wall to access game
 
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(LIGHT_GREEN)
+        self.spritesheet = Spritesheet(path.join(self.game.image_dir, "grass.png"))
+        self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
 
         self.rect = self.image.get_rect()
 
