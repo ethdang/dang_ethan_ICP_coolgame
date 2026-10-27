@@ -258,19 +258,14 @@ class Particle(Sprite):
         self.rect = self.image.get_rect()
         # need to make it spawn at player and not visually at top left corner
         
-        self.speed = randint(1, 5)
+        self.speed = randint(1, 2)
         
-        self.x = x # don't multiply by tile size because we are alr passing in location
-        self.y = y
-
-        self.pos = vec(self.x, self.y)
+        self.vel = vec(randrange(-180, 180), randrange(-180,180))
+        self.pos = vec(x, y)
 
         # timer will start the moment it is instantiated
-        self.countdown = Cooldown(200) # in milli seconds
+        self.countdown = Cooldown(400) # in milliseconds
         self.countdown.event_time = floor(pg.time.get_ticks()/1000)
-
-        self.rect.x = self.x
-        self.rect.y = self.y
 
         self.triggeredParticle = 0
 
@@ -280,12 +275,13 @@ class Particle(Sprite):
             self.triggeredParticle = True
 
         self.countdown.ticking()
-        self.rect.x += self.speed * randint(-5, 5)
-        self.rect.y += self.speed * randint(-5, 5)
 
-        # if it has existed longer than 3 seconds kill
+        self.pos += self.vel * self.speed * self.game.dt
+        self.rect.x = self.pos.x + TILESIZE/2
+        self.rect.y = self.pos.y + TILESIZE/2
+
+        # if it reached the end of it's lifetime, kill
         if self.countdown.ready():
-            print("kil")
             self.kill()
         
 class Mob(Sprite):

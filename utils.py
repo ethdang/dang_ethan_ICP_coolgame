@@ -41,6 +41,7 @@ class Spritesheet:
         image.set_colorkey(BLACK)
         return image
 
+# if isn't broken don't fix it...
 class Cooldown:
     def __init__(self, time):
         self.start_time = 0
