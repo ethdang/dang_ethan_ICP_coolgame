@@ -17,10 +17,11 @@ YELLOW = (0,255,255)
 BLUE = (0,0,255)
 
 ######### player settings #########
-PLAYER_SPEED = 200
-PLAYER_JUMP = 500
+PLAYER_SPEED = 2
+PLAYER_JUMP = 50
 PLAYER_HIT_RECT = pg.Rect(0,0, TILESIZE - 14, TILESIZE - 10)
-GRAVITY = 900
+PLAYER_FRIC = 1
+GRAVITY = 0.5
 
 ######### mob settings #########
 MOB_SPEED = 150
@@ -28,5 +29,8 @@ MOB_HIT_RECT = pg.Rect(0,0, TILESIZE - 10, TILESIZE - 10)
 ######### screen window #########
 SCREEN_WIDTH = 1024 # width of screen
 SCREEN_HEIGHT = 768 # height of screen
+
+WORLD_WIDTH = 3072
+WORLD_HEIGHT = 2304
 
 TITLE = "COOLer game"

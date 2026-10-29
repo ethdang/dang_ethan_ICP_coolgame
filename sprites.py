@@ -69,7 +69,6 @@ def collide_with_walls(sprite, group, dir):
             sprite.vel.y = 0
             sprite.hit_rect.centery = sprite.pos.y
 
-
 class Player(Sprite):
     def __init__(self, game, x, y):
         # put it in the all sprites group immediately
@@ -90,6 +89,7 @@ class Player(Sprite):
 
         self.vel = vec(0,0)
         self.pos = vec(x * TILESIZE,y * TILESIZE)
+        self.acc = vec(0,0) # velocity
 
         self.facing_dir = 1 # 1 is right, 0 center, -1 left
         self.previous_dir = 1
@@ -107,28 +107,31 @@ class Player(Sprite):
         # change velocity based on which key is pressed
         self.state = "idle"
 
-        self.vel = vec(0,self.vel.y)
+        self.vel = vec(0, 0)
         keys = pg.key.get_pressed() # get pressed keys
 
         self.previous_dir = self.facing_dir
 
         if keys[pg.K_LEFT] or keys[pg.K_a]: # left
-            self.vel.x = -PLAYER_SPEED
+            # self.vel.x = -PLAYER_SPEED
+            self.acc.x = -PLAYER_SPEED
+
             self.state = "walking"
             self.facing_dir = -1
         if keys[pg.K_RIGHT] or keys[pg.K_d]: # right
-            self.vel.x = PLAYER_SPEED
+            # self.vel.x = PLAYER_SPEED
+            self.acc.x = PLAYER_SPEED
+            
             self.state = "walking"
             self.facing_dir = 1
 
+        # jump
         if (keys[pg.K_UP] or keys[pg.K_w]) and self.touching_ground: # if up is pressed and touching ground
-            self.vel.y -= PLAYER_JUMP
+            self.acc.y = -PLAYER_JUMP
             self.touching_ground = False
             self.state = "jumping"
         elif not self.touching_ground:
-            self.vel.y += GRAVITY * self.game.dt
             self.state = "falling"
-
 
         # if keys[pg.K_DOWN] or keys[pg.K_s]: # down
         #     self.vel.y = PLAYER_SPEED 
@@ -205,12 +208,17 @@ class Player(Sprite):
         self.fall_frames = [self.spritesheet.get_image(TILESIZE * 3, 0, TILESIZE, TILESIZE)]
 
     def update(self):
+        self.acc = vec(0, GRAVITY) # reset every frame
         self.get_keys()
+        self.acc.x += self.vel.x * PLAYER_FRIC
+        self.acc.y += self.vel.y * PLAYER_FRIC
+
+        self.vel += self.acc
 
         self.animate()
         
         self.rect.center = self.pos
-        self.pos += self.vel * self.game.dt
+        self.pos += self.vel + 0.5 * self.acc
 
         self.hit_rect.centerx = self.pos.x
         collide_with_walls(self, self.game.all_walls, 'x')
@@ -236,13 +244,24 @@ class Wall(Sprite):
 
         self.rect = self.image.get_rect()
 
-        self.x = x * TILESIZE
-        self.y = y * TILESIZE
+        self.pos = vec(x * TILESIZE, y * TILESIZE)
 
-        self.pos = vec(self.x, self.y)
+        self.rect.x = self.pos.x
+        self.rect.y = self.pos.y
 
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.camera_offset = 0 # cannot set camera offset because we cannot access player at init
+
+    def update(self):
+        pass
+        # self.camera_offset = self.game.player.pos - vec(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+        
+        # # clamp to fit within world bounds
+        # self.camera_offset.x = pg.math.clamp(self.camera_offset.x, 0, WORLD_WIDTH - SCREEN_WIDTH) 
+        # self.camera_offset.y = pg.math.clamp(self.camera_offset.y, 0, WORLD_HEIGHT - SCREEN_HEIGHT)
+        # self.screen_pos = self.pos - self.camera_offset
+
+        # self.rect.x = self.screen_pos.x
+        # self.rect.y = self.screen_pos.y
 
 class Particle(Sprite):
     def __init__(self, game, x, y):
