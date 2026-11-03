@@ -129,14 +129,29 @@ class Game:
         pg.mixer.music.play(loops=-1)
 
 
-    def run(self): # main game loop
-        self.playing = True
+    def run(self):
+            self.playing = True
+            # each physic step represents 1/upd rate of a second
+            physics_step = 1 / PHYSICS_UPDATE_RATE
+            # elapsed time in which physics has not been updated yet
+            accumulator = 0
 
-        while self.playing:
-            self.dt = self.clock.tick(FPS) / 1000
-            self.events()
-            self.update()
-            self.draw()
+            while self.playing:
+                # limits rendering speed and returns milliseconds since prev frame
+                frame_time = self.clock.tick(FPS) / 1000
+                # time gets added to accumulator, capped at .25 sec
+                # to prevent long pause from triggering alot of physics updates
+                accumulator += min(frame_time, 0.25)
+
+                self.events()
+
+                # while there is enough time for a physics step
+                while accumulator >= physics_step:
+                    self.dt = physics_step # set dt to 1/120
+                    self.update() # upd movement and collisions
+                    accumulator -= physics_step # subtract time it takes to process
+
+                self.draw()
 
     def events(self):
         for event in pg.event.get():
@@ -167,7 +182,7 @@ class Game:
 
         self.all_sprites.draw(self.screen) # draw all sprites
 
-        self.draw_text("Framex per second: " + str(floor(1/self.dt)), 24, WHITE, SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
+        self.draw_text("Framex per second: " + str(self.clock.get_fps()), 24, WHITE, SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
         self.draw_text("moneys: " + str(COLLECTED["coin"]), 24, WHITE, SCREEN_WIDTH/12, SCREEN_HEIGHT/8)
         self.draw_text("score: " + str(self.score), 24, WHITE, SCREEN_WIDTH/12, SCREEN_HEIGHT/10)
         self.draw_text("high score: " + str(self.high_score), 24, WHITE, SCREEN_WIDTH/12, SCREEN_HEIGHT/12)

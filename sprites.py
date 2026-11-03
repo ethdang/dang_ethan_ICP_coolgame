@@ -212,9 +212,8 @@ class Player(Sprite):
     def update(self):
         # if (self.state == "jumping" or self.state == "falling"):
         self.acc = vec(0,0)
-        
         if (not self.touching_ground):
-            self.acc.y = self.vel.y + GRAVITY  # reset every frame
+            self.acc.y = self.vel.y + GRAVITY * self.game.dt # reset every frame
 
         self.get_keys()
         self.acc.x += self.vel.x * PLAYER_FRIC

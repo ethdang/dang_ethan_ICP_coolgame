@@ -2,6 +2,7 @@ import pygame as pg
 
 ######### game #########
 FPS = 120
+PHYSICS_UPDATE_RATE = 60
 
 ######### visuals #########
 TILESIZE = 32
@@ -17,8 +18,8 @@ YELLOW = (0,255,255)
 BLUE = (0,0,255)
 
 ######### player settings #########
-PLAYER_SPEED = 2
-PLAYER_JUMP = 5
+PLAYER_SPEED = 2.5
+PLAYER_JUMP = 6.5
 PLAYER_HIT_RECT = pg.Rect(0,0, TILESIZE - 14, TILESIZE - 10)
 PLAYER_FRIC = 0.05
 GRAVITY = 9.8
