@@ -18,10 +18,10 @@ BLUE = (0,0,255)
 
 ######### player settings #########
 PLAYER_SPEED = 2
-PLAYER_JUMP = 50
+PLAYER_JUMP = 5
 PLAYER_HIT_RECT = pg.Rect(0,0, TILESIZE - 14, TILESIZE - 10)
-PLAYER_FRIC = 1
-GRAVITY = 0.5
+PLAYER_FRIC = 0.05
+GRAVITY = 9.8
 
 ######### mob settings #########
 MOB_SPEED = 150

@@ -99,6 +99,8 @@ class Player(Sprite):
         self.current_frame = 0
         self.load_images()
 
+        self.state = 0
+
         self.touching_ground = False
 
     def get_keys(self):
@@ -130,8 +132,8 @@ class Player(Sprite):
             self.acc.y = -PLAYER_JUMP
             self.touching_ground = False
             self.state = "jumping"
-        elif not self.touching_ground:
-            self.state = "falling"
+        # else:
+        #     self.acc.y += GRAVITY * self.game.dt
 
         # if keys[pg.K_DOWN] or keys[pg.K_s]: # down
         #     self.vel.y = PLAYER_SPEED 
@@ -208,10 +210,15 @@ class Player(Sprite):
         self.fall_frames = [self.spritesheet.get_image(TILESIZE * 3, 0, TILESIZE, TILESIZE)]
 
     def update(self):
-        self.acc = vec(0, GRAVITY) # reset every frame
+        # if (self.state == "jumping" or self.state == "falling"):
+        self.acc = vec(0,0)
+        
+        if (not self.touching_ground):
+            self.acc.y = self.vel.y + GRAVITY  # reset every frame
+
         self.get_keys()
         self.acc.x += self.vel.x * PLAYER_FRIC
-        self.acc.y += self.vel.y * PLAYER_FRIC
+        self.acc.y += self.vel.y 
 
         self.vel += self.acc
 

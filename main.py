@@ -31,24 +31,24 @@ from utils import *
         graphics - things are drawn, sound - jump,
         haptics - vibration, etc
 
-    CLASH ROYALE
+    Ultimate CHicken Horse Ripoff
 
         GOALS:
-            destroy the opponent's towers
-            become the best
+            be the last one standing
+            be the best
         
         RULES:
-            you can only place on your side
-            you have a limited amount of elixer
+            no player to player collision
+            set pool of objects you can place
 
         FEEDBACK:
-            place a card and it appears on screen
-            elixer bar
-            tower health
+            lava
+            particles
+            score
 
         FREEDOM:
-            you can build your deck however you want
-            place any card in your deck
+            you can build the map however you want
+            beat the platform however you want
             choose your own strategy
 
 '''
