@@ -194,7 +194,6 @@ class Player(Sprite):
             print("die")
 
 
-
     def animate(self):
         # use the time element to get now
         if (self.state == "idle"):
@@ -314,6 +313,25 @@ class NoTouchWall(Sprite):
 
         self.rect.x = self.pos.x
         self.rect.y = self.pos.y
+class NoTouchWall(Sprite):
+    def __init__(self, game, x, y):
+        # put it in the all sprites group immediately
+        self.groups = game.all_sprites, game.all_no_touch
+
+        Sprite.__init__(self, self.groups) # initialize sprite
+
+        self.game = game # allow the wall to access game
+
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.spritesheet = Spritesheet(path.join(self.game.image_dir, "dirt.png"))
+        self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
+        self.image.set_alpha(randrange(200, 220)) # create slight dynamic variation
+        self.rect = self.image.get_rect()
+
+        self.pos = vec(x * TILESIZE, y * TILESIZE)
+
+        self.rect.x = self.pos.x
+        self.rect.y = self.pos.y
 
 class WinTile(Sprite):
     def __init__(self, game, x, y):
@@ -353,6 +371,39 @@ class KillTile(Sprite):
 
         self.rect.x = self.pos.x
         self.rect.y = self.pos.y
+
+class MouseTile(Sprite):
+    def __init__(self, game):
+        self.groups = game.all_sprites, game.all_mouse_tile
+        # might not want to group it in all sprites...
+        
+        Sprite.__init__(self, self.groups) # initialize sprite
+
+        self.game = game
+
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.spritesheet = Spritesheet(path.join(self.game.image_dir, "dirt.png"))
+        self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
+        self.image.set_alpha(randrange(200, 220)) # create slight dynamic variation
+        self.rect = self.image.get_rect()
+
+        self.pos = vec(0, 0)
+
+        self.rect.x = self.pos.x
+        self.rect.y = self.pos.y
+
+    def update(self):
+        # get mouse pos, but center it
+        self.pos = vec(pg.mouse.get_pos()[0] - TILESIZE/2, pg.mouse.get_pos()[1] - TILESIZE/2)
+        # round it to intervales of our tilesize
+        rounded_pos = vec(round(self.pos.x / TILESIZE), round(self.pos.y / TILESIZE)) * TILESIZE
+        # move to pos
+        self.rect.x = rounded_pos.x 
+        self.rect.y = rounded_pos.y
+
+        if (pg.mouse.get_just_pressed()[0]):
+            print("click")
+            Wall(self.game, rounded_pos.x/TILESIZE, rounded_pos.y/TILESIZE)
 
 class Particle(Sprite):
     def __init__(self, game, x, y):

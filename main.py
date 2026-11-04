@@ -104,14 +104,17 @@ class Game:
     def new(self): # when we create or start up a new game
         self.load_data("_images/maps_v3.png")
         self.all_sprites = pg.sprite.Group() # group all sprites
-        self.all_walls = pg.sprite.Group() # group all walls
-        self.all_no_touch = pg.sprite.Group() # group all non collidables
         self.all_mobs = pg.sprite.Group() # group all mob
+        
         self.all_collectables = pg.sprite.Group() # group all collectable
         self.all_particles = pg.sprite.Group() # group all particles
+        
+        self.all_walls = pg.sprite.Group() # group all walls
+        self.all_no_touch = pg.sprite.Group() # group all non collidables
         self.all_kill_tile = pg.sprite.Group() # group all particles
         self.all_win_tile = pg.sprite.Group() # group all particles
 
+        self.all_mouse_tile = pg.sprite.Group() # group all mouse tile
         # self.camera = Camera(self, 0,0, WHITE)
 
         for row, tiles in enumerate(self.map.data):
@@ -125,7 +128,8 @@ class Game:
                 elif tile == "W": # win/goal tile
                     WinTile(self, col, row)
                 elif tile == "C":
-                    Collectable(self, col, row, BLUE, 'coin', 1)
+                    pass
+                    # Collectable(self, col, row, BLUE, 'coin', 1)
                 
         # instantiate after the walls to appear ABOVE the walls
         for row, tiles in enumerate (self.map.data):
@@ -133,6 +137,8 @@ class Game:
                 if tile == "P": # player spawn
                     self.player = Player(self, col, row) # instantiate the player
                     self.player_spawn = vec(col, row) # set player spawn for respawns
+
+        MouseTile(self)
 
         # self.camera = self.player
 
