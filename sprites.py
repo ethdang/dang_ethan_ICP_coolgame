@@ -99,11 +99,17 @@ class Player(Sprite):
         self.current_frame = 0
         self.load_images()
 
+        self.freeze_movement = False
+        self.has_won = False
+
         self.state = 0
 
         self.touching_ground = False
 
     def get_keys(self):
+        if (self.freeze_movement):
+            return # dont get keys
+
         # reset v so it doesnt fly away
         # listen for events specific to keys
         # change velocity based on which key is pressed
@@ -151,12 +157,14 @@ class Player(Sprite):
         #     self.state = "falling"
 
     def handle_collision(self):
-        mob_hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
+        # mob_hits = pg.sprite.spritecollide(self, self.game.all_mobs, False)
         collectable_hits = pg.sprite.spritecollide(self, self.game.all_collectables, False)
+        win_hits = pg.sprite.spritecollide(self, self.game.all_win_tile, False)
+        kill_hits = pg.sprite.spritecollide(self, self.game.all_kill_tile, False)
 
-        if mob_hits:
-            mob_hits[0].kill()
-            # print("killed em")
+        # if mob_hits:
+        #     mob_hits[0].kill()
+        #     # print("killed em")
         
         if collectable_hits:
             hit = collectable_hits[0]
@@ -168,6 +176,23 @@ class Player(Sprite):
             hit.kill() # get rid of coin
             self.game.score += 1
             self.game.coin_collect.play()
+
+        if win_hits and not self.has_won:
+            print("player win")
+            self.vel = vec(0,0)
+            self.acc = vec(0,0)
+            self.rect.center = self.pos
+            self.has_won = True
+            self.freeze_movement = True
+            # player dances, add anim later
+
+        if kill_hits:
+            self.vel = vec(0,0)
+            self.acc = vec(0,0)
+            self.rect.center = self.pos
+            self.pos = self.game.player_spawn * TILESIZE
+            print("die")
+
 
 
     def animate(self):
@@ -247,6 +272,7 @@ class Wall(Sprite):
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.spritesheet = Spritesheet(path.join(self.game.image_dir, "grass.png"))
         self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
+        self.image.set_alpha(randrange(230, 255))
 
         self.rect = self.image.get_rect()
 
@@ -268,6 +294,65 @@ class Wall(Sprite):
 
         # self.rect.x = self.screen_pos.x
         # self.rect.y = self.screen_pos.y
+
+class NoTouchWall(Sprite):
+    def __init__(self, game, x, y):
+        # put it in the all sprites group immediately
+        self.groups = game.all_sprites, game.all_no_touch
+
+        Sprite.__init__(self, self.groups) # initialize sprite
+
+        self.game = game # allow the wall to access game
+
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.spritesheet = Spritesheet(path.join(self.game.image_dir, "dirt.png"))
+        self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
+        self.image.set_alpha(randrange(200, 220)) # create slight dynamic variation
+        self.rect = self.image.get_rect()
+
+        self.pos = vec(x * TILESIZE, y * TILESIZE)
+
+        self.rect.x = self.pos.x
+        self.rect.y = self.pos.y
+
+class WinTile(Sprite):
+    def __init__(self, game, x, y):
+        # put it in the all sprites group immediately
+        self.groups = game.all_sprites, game.all_win_tile
+
+        Sprite.__init__(self, self.groups) # initialize sprite
+
+        self.game = game # allow the wall to access game
+
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.spritesheet = Spritesheet(path.join(self.game.image_dir, "dirt.png"))
+        self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
+        self.image.set_alpha(randrange(200, 220)) # create slight dynamic variation
+        self.rect = self.image.get_rect()
+
+        self.pos = vec(x * TILESIZE, y * TILESIZE)
+
+        self.rect.x = self.pos.x
+        self.rect.y = self.pos.y
+
+class KillTile(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.all_kill_tile
+        
+        Sprite.__init__(self, self.groups) # initialize sprite
+
+        self.game = game # allow the wall to access game
+
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.spritesheet = Spritesheet(path.join(self.game.image_dir, "dirt.png"))
+        self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
+        self.image.set_alpha(randrange(200, 220)) # create slight dynamic variation
+        self.rect = self.image.get_rect()
+
+        self.pos = vec(x * TILESIZE, y * TILESIZE)
+
+        self.rect.x = self.pos.x
+        self.rect.y = self.pos.y
 
 class Particle(Sprite):
     def __init__(self, game, x, y):

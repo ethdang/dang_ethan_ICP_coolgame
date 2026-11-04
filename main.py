@@ -74,6 +74,8 @@ class Game:
         self.high_score = 0 # store high score
         self.score = 0 # score current score
 
+        self.player_spawn = 0 # store spawn point
+
     def load_data(self, map):
         self.game_dir = path.dirname(__file__)
         self.image_dir = path.join(self.game_dir, '_images')
@@ -100,12 +102,15 @@ class Game:
                 print("high score set to 0")
 
     def new(self): # when we create or start up a new game
-        self.load_data("_images/level_sprite_sheet.png")
+        self.load_data("_images/maps_v3.png")
         self.all_sprites = pg.sprite.Group() # group all sprites
         self.all_walls = pg.sprite.Group() # group all walls
+        self.all_no_touch = pg.sprite.Group() # group all non collidables
         self.all_mobs = pg.sprite.Group() # group all mob
         self.all_collectables = pg.sprite.Group() # group all collectable
         self.all_particles = pg.sprite.Group() # group all particles
+        self.all_kill_tile = pg.sprite.Group() # group all particles
+        self.all_win_tile = pg.sprite.Group() # group all particles
 
         # self.camera = Camera(self, 0,0, WHITE)
 
@@ -113,15 +118,21 @@ class Game:
             for col, tile in enumerate(tiles):
                 if tile == "0": # wall
                     Wall(self, col, row)
-                if tile == "E": # mob spawn
-                    Mob(self, col, row)
-                if tile == "C":
+                elif tile == "O": # non-collidable wall
+                    NoTouchWall(self, col, row)
+                elif tile == "K": # kill tile
+                    KillTile(self, col, row)
+                elif tile == "W": # win/goal tile
+                    WinTile(self, col, row)
+                elif tile == "C":
                     Collectable(self, col, row, BLUE, 'coin', 1)
+                
         # instantiate after the walls to appear ABOVE the walls
         for row, tiles in enumerate (self.map.data):
             for col, tile in enumerate(tiles):
                 if tile == "P": # player spawn
                     self.player = Player(self, col, row) # instantiate the player
+                    self.player_spawn = vec(col, row) # set player spawn for respawns
 
         # self.camera = self.player
 

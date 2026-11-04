@@ -11,15 +11,19 @@ class Map:
             cur_line = "" # reset current line
 
             for x in range(self.levelspritesheet.width):
-                found_color = self.levelspritesheet.get_at((x,y))
+                found_color = self.levelspritesheet.get_at((x,y)) # get color at pixel coord
                 if found_color == WHITE: # wall
                     cur_line += "0"
                 elif found_color == BLACK: # nothing
                     cur_line += "C"
                 elif found_color == GREEN: # player
                     cur_line += "P"
-                elif found_color == RED: # enemy
-                    cur_line += "E"
+                elif found_color == RED: # kill tile
+                    cur_line += "K"
+                elif found_color == GREY: # non-collidable wall
+                    cur_line += "O"
+                elif found_color == GOAL_BLUE: # goal/win tile
+                    cur_line += "W"
 
             self.data.append(cur_line) # add our line STRING into our map LIST
 
@@ -28,7 +32,7 @@ class Map:
 
             self.width = self.tilewidth * TILESIZE
             self.height = self.tileheight * TILESIZE
-
+            
 class Spritesheet:
     def __init__(self, filename):
         self.spritesheet = pg.image.load(filename).convert()
