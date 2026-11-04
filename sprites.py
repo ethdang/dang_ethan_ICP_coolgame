@@ -29,7 +29,7 @@ def collide_with_walls(sprite, group, dir):
             sprite.hit_rect.centerx = sprite.pos.x
 
     if dir == 'y-floor':
-        sprite.hit_rect.centery += 1
+        sprite.hit_rect.centery += 2
         hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect) 
 
         if hits:
@@ -44,7 +44,7 @@ def collide_with_walls(sprite, group, dir):
         elif sprite.touching_ground:
             sprite.touching_ground = False
 
-        sprite.hit_rect.centery -= 1
+        sprite.hit_rect.centery -= 2
 
     if dir == 'y-ciel':
         hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect) 
@@ -240,8 +240,10 @@ class Player(Sprite):
             self.acc.y = self.vel.y + GRAVITY * self.game.dt # reset every frame
 
         self.get_keys()
-        self.acc.x += self.vel.x * PLAYER_FRIC
-        self.acc.y += self.vel.y 
+
+        if (not self.freeze_movement):
+            self.acc.x += self.vel.x * PLAYER_FRIC
+            self.acc.y += self.vel.y 
 
         self.vel += self.acc
 
