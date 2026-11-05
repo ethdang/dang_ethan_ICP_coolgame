@@ -107,6 +107,8 @@ class Player(Sprite):
         self.touching_ground = False
 
     def get_keys(self):
+        self.vel = vec(0, 0)
+
         if (self.freeze_movement):
             return # dont get keys
 
@@ -115,7 +117,6 @@ class Player(Sprite):
         # change velocity based on which key is pressed
         self.state = "idle"
 
-        self.vel = vec(0, 0)
         keys = pg.key.get_pressed() # get pressed keys
 
         self.previous_dir = self.facing_dir
@@ -179,7 +180,6 @@ class Player(Sprite):
 
         if win_hits and not self.has_won:
             print("player win")
-            self.vel = vec(0,0)
             self.acc = vec(0,0)
             self.rect.center = self.pos
             self.has_won = True
