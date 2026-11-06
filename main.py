@@ -1,6 +1,6 @@
 # this file was created by Ethan Dang
 # code inspired by Chris Bradfield who was inspired by Notch
-# multiplayer code from TechWithTime: https://www.techwithtim.net/tutorials/python-online-game-tutorial
+# multiplayer code from TechWithTime https://www.techwithtim.net/tutorials/python-online-game-tutorial
 
 # import pygame because we are making a game; use pg so it's easier to access
 import pygame as pg
@@ -11,6 +11,14 @@ from sprites import *
 from settings import *
 from playerResource import *
 from utils import *
+from network import Network
+
+
+'''
+    to start playing
+    1. run server.py
+    2. in a seperate terminal, run main py
+'''
 
 
 
@@ -81,6 +89,12 @@ class Game:
         self.score = 0 # score current score
 
         self.player_spawn = 0 # store spawn point
+
+        try: # try to connect to network
+            self.network = Network()
+        except OSError as error: # if we cannot connect
+            print("Could not connect to server:", error)
+            self.network = None
 
     def load_data(self, map):
         self.game_dir = path.dirname(__file__)
@@ -155,6 +169,14 @@ class Game:
         pg.mixer.music.load(path.join(self.sound_dir, "background_music.mp3"))
         pg.mixer.music.play(loops=-1)
 
+    def read_pos(str):
+        str = str.split(",")
+        return int(str[0]), int(str[1])
+
+
+    def make_pos(tup):
+        return str(tup[0]) + "," + str(tup[1])
+
 
     def run(self):
             self.playing = True
@@ -166,7 +188,6 @@ class Game:
             self.start_time = pg.time.get_ticks()
 
             while self.playing:
-
                 # limits rendering speed and returns milliseconds since prev frame
                 frame_time = self.clock.tick(FPS) / 1000
                 # time gets added to accumulator, capped at .25 sec
@@ -191,6 +212,9 @@ class Game:
                 if (self.score > self.high_score):
                     with open(path.join(self.game_dir, self.game_save_file), 'w') as file:
                         file.write(str(self.score))
+                if (self.network): # send player score to network
+                    response = self.network.send("score:" + str(self.score))
+                    print("Server response:", response)
 
                 if self.playing:
                     self.playing = False # output: game is no longer playign
