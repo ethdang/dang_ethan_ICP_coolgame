@@ -20,9 +20,10 @@ except socket.error as e: # error
 s.listen(2)
 print("Waiting for a connection, Server Started")
 
+next_client_id = 1
 
-def threaded_client(conn):
-    conn.send(str.encode("Connected")) # send welcome message
+def threaded_client(conn, client_id):
+    conn.sendall(str.encode(str(client_id))) # send this client's unique ID
     reply = ""
     while True:
         try:
@@ -49,5 +50,7 @@ def threaded_client(conn):
 while True:
     conn, addr = s.accept() # wait for client
     print("Connected to:", addr)
+    client_id = next_client_id # set client id to be +1 from previous
+    next_client_id += 1
     # start client thread
-    start_new_thread(threaded_client, (conn,))
+    start_new_thread(threaded_client, (conn, client_id))

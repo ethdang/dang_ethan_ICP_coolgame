@@ -15,11 +15,8 @@ class Network:
         print(self.id)
 
     def connect(self):
-        try: # if we connected, set our id
-            self.client.connect(self.addr)
-            return self.client.recv(2048).decode()
-        except: # try to connect, if we cannot, pass
-            pass
+        self.client.connect(self.addr) # connect the client to the server
+        return int(self.client.recv(2048).decode())
 
     def send(self, data):
         try:
@@ -27,7 +24,7 @@ class Network:
             # wait for response, convert response to text, 
             # return the text
 
-            self.client.send(str.encode(data))
+            self.client.sendall(str.encode(data)) # send all clients the data
             return self.client.recv(2048).decode()
         except socket.error as e: 
             # would be an error because we shouldnt be able to send if we are not connected

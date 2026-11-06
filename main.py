@@ -92,9 +92,11 @@ class Game:
 
         try: # try to connect to network
             self.network = Network()
+            self.client_number = self.network.id
         except OSError as error: # if we cannot connect
             print("Could not connect to server:", error)
             self.network = None
+            self.client_number = None
 
     def load_data(self, map):
         self.game_dir = path.dirname(__file__)
@@ -241,6 +243,10 @@ class Game:
         self.draw_text("Framex per second: " + str(self.clock.get_fps()), 24, WHITE, SCREEN_WIDTH/2, SCREEN_HEIGHT - 50)
         self.draw_text("score: " + str(self.score), 24, WHITE, SCREEN_WIDTH/12, SCREEN_HEIGHT/10)
         self.draw_text("high score: " + str(self.high_score), 24, WHITE, SCREEN_WIDTH/12, SCREEN_HEIGHT/12)
+       
+        if self.client_number != None: # only display if we have a client id
+            self.draw_text("client: " + str(self.client_number), 24, WHITE, SCREEN_WIDTH/2, 70)
+        
         self.draw_text("current time: " + str(self.current_time), 24, WHITE, SCREEN_WIDTH/2, 100)
         pg.display.flip()
 
