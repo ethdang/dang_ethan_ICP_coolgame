@@ -70,7 +70,7 @@ def collide_with_walls(sprite, group, dir):
             sprite.hit_rect.centery = sprite.pos.y
 
 class Player(Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, grid_pos):
         # put it in the all sprites group immediately
         self.groups = game.all_sprites
 
@@ -88,7 +88,7 @@ class Player(Sprite):
         self.hit_rect = PLAYER_HIT_RECT
 
         self.vel = vec(0,0)
-        self.pos = vec(x * TILESIZE,y * TILESIZE)
+        self.pos = grid_pos * TILESIZE
         self.acc = vec(0,0) # velocity
 
         self.facing_dir = 1 # 1 is right, 0 center, -1 left
@@ -172,7 +172,8 @@ class Player(Sprite):
             COLLECTED[hit.collectableID] += hit.value # add value to dict by id
 
             for i in range(10):
-                Particle(self.game, hit.pos.x, hit.pos.y)
+                pos = vec(hit.pos.x, hit.pos.y)
+                Particle(self.game, pos)
             
             hit.kill() # get rid of coin
             self.game.score += 1
@@ -262,7 +263,7 @@ class Player(Sprite):
         self.handle_collision()
         
 class Wall(Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, grid_pos, sprite_name):
         # put it in the all sprites group immediately
         self.groups = game.all_sprites, game.all_walls
 
@@ -271,13 +272,13 @@ class Wall(Sprite):
         self.game = game # allow the wall to access game
 
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.spritesheet = Spritesheet(path.join(self.game.image_dir, "grass.png"))
+        self.spritesheet = Spritesheet(path.join(self.game.image_dir, sprite_name))
         self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
         self.image.set_alpha(randrange(230, 255))
 
         self.rect = self.image.get_rect()
 
-        self.pos = vec(x * TILESIZE, y * TILESIZE)
+        self.pos = grid_pos * TILESIZE
 
         self.rect.x = self.pos.x
         self.rect.y = self.pos.y
@@ -297,7 +298,7 @@ class Wall(Sprite):
         # self.rect.y = self.screen_pos.y
 
 class NoTouchWall(Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, grid_pos, sprite_name):
         # put it in the all sprites group immediately
         self.groups = game.all_sprites, game.all_no_touch
 
@@ -306,17 +307,18 @@ class NoTouchWall(Sprite):
         self.game = game # allow the wall to access game
 
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.spritesheet = Spritesheet(path.join(self.game.image_dir, "dirt.png"))
+        self.spritesheet = Spritesheet(path.join(self.game.image_dir, sprite_name))
         self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
         self.image.set_alpha(randrange(200, 220)) # create slight dynamic variation
         self.rect = self.image.get_rect()
 
-        self.pos = vec(x * TILESIZE, y * TILESIZE)
+        self.pos = grid_pos * TILESIZE
 
         self.rect.x = self.pos.x
         self.rect.y = self.pos.y
+
 class NoTouchWall(Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, grid_pos, sprite_name):
         # put it in the all sprites group immediately
         self.groups = game.all_sprites, game.all_no_touch
 
@@ -325,18 +327,18 @@ class NoTouchWall(Sprite):
         self.game = game # allow the wall to access game
 
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.spritesheet = Spritesheet(path.join(self.game.image_dir, "dirt.png"))
+        self.spritesheet = Spritesheet(path.join(self.game.image_dir, sprite_name))
         self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
         self.image.set_alpha(randrange(200, 220)) # create slight dynamic variation
         self.rect = self.image.get_rect()
 
-        self.pos = vec(x * TILESIZE, y * TILESIZE)
+        self.pos = grid_pos * TILESIZE
 
         self.rect.x = self.pos.x
         self.rect.y = self.pos.y
 
 class WinTile(Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, grid_pos, sprite_name):
         # put it in the all sprites group immediately
         self.groups = game.all_sprites, game.all_win_tile
 
@@ -345,31 +347,32 @@ class WinTile(Sprite):
         self.game = game # allow the wall to access game
 
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.spritesheet = Spritesheet(path.join(self.game.image_dir, "dirt.png"))
+        self.spritesheet = Spritesheet(path.join(self.game.image_dir, sprite_name))
         self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
         self.image.set_alpha(randrange(200, 220)) # create slight dynamic variation
         self.rect = self.image.get_rect()
 
-        self.pos = vec(x * TILESIZE, y * TILESIZE)
+        self.pos = grid_pos * TILESIZE
 
         self.rect.x = self.pos.x
         self.rect.y = self.pos.y
 
 class KillTile(Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, grid_pos):
         self.groups = game.all_sprites, game.all_kill_tile
         
         Sprite.__init__(self, self.groups) # initialize sprite
 
         self.game = game # allow the wall to access game
 
+        # ideally going to be just outside camera so we dont really need sprite
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.spritesheet = Spritesheet(path.join(self.game.image_dir, "dirt.png"))
         self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
         self.image.set_alpha(randrange(200, 220)) # create slight dynamic variation
         self.rect = self.image.get_rect()
 
-        self.pos = vec(x * TILESIZE, y * TILESIZE)
+        self.pos = grid_pos * TILESIZE
 
         self.rect.x = self.pos.x
         self.rect.y = self.pos.y
@@ -386,7 +389,7 @@ class MouseTile(Sprite):
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.spritesheet = Spritesheet(path.join(self.game.image_dir, "dirt.png"))
         self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
-        self.image.set_alpha(randrange(200, 220)) # create slight dynamic variation
+        self.image.set_alpha(randrange(200, 220))
         self.rect = self.image.get_rect()
 
         self.pos = vec(0, 0)
@@ -403,12 +406,16 @@ class MouseTile(Sprite):
         self.rect.x = rounded_pos.x 
         self.rect.y = rounded_pos.y
 
+        # detect mouse left click
         if (pg.mouse.get_just_pressed()[0]):
             print("click")
-            Wall(self.game, rounded_pos.x/TILESIZE, rounded_pos.y/TILESIZE)
+            pos = vec(rounded_pos.x/TILESIZE, rounded_pos.y/TILESIZE)
+            Wall(self.game, pos, "crate.png")
+            for i in range(10):
+                Particle(self.game, pos)
 
 class Particle(Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, grid_pos):
         # put it in the all sprites group immediately
         self.groups = game.all_sprites, game.all_particles
 
@@ -425,7 +432,7 @@ class Particle(Sprite):
         self.speed = randint(1, 2)
         
         self.vel = vec(randrange(-180, 180), randrange(-180,180))
-        self.pos = vec(x, y)
+        self.pos = grid_pos * TILESIZE
 
         # timer will start the moment it is instantiated
         self.countdown = Cooldown(400) # in milliseconds
@@ -449,7 +456,7 @@ class Particle(Sprite):
             self.kill()
         
 class Mob(Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, grid_pos):
         # put it in the all sprites group immediately
         self.groups = game.all_sprites, game.all_mobs
 
@@ -471,10 +478,7 @@ class Mob(Sprite):
         self.current_frame = 0
         self.load_images()
 
-        self.x = x * TILESIZE
-        self.y = y * TILESIZE
-
-        self.pos = vec(self.x, self.y)
+        self.pos = grid_pos * TILESIZE
         self.vel = vec(0,0)
 
         self.rect.x = self.x
@@ -529,7 +533,7 @@ class Mob(Sprite):
         collide_with_walls(self, self.game.all_walls, 'y')
 
 class Collectable(Sprite): # later on... sprite instead of color
-    def __init__(self, game, x, y, color, collectableID, value):
+    def __init__(self, game, grid_pos, color, collectableID, value):
         self.groups = game.all_sprites, game.all_collectables
         Sprite.__init__(self, self.groups) # initialize sprite
         self.game = game # allow the wall to access game
@@ -541,15 +545,13 @@ class Collectable(Sprite): # later on... sprite instead of color
         self.image.fill(color)
         self.rect = self.image.get_rect()
 
-        self.x = x * TILESIZE
-        self.y = y * TILESIZE
-        self.pos = vec(self.x, self.y)
+        self.pos = grid_pos * TILESIZE
         self.rect.x = self.x
         self.rect.y = self.y
 
 
 class Camera(Sprite):
-    def __init__(self, game, x, y, color):
+    def __init__(self, game, grid_pos, color):
             # put it in the all sprites group immediately
             self.groups = game.all_sprites
     
@@ -561,11 +563,8 @@ class Camera(Sprite):
             self.image.fill(color)
     
             self.rect = self.image.get_rect()
-    
-            self.x = x * TILESIZE
-            self.y = y * TILESIZE
 
-            self.pos = vec(self.x,self.y)
+            self.pos = grid_pos * TILESIZE
     
             self.rect.x = self.x
             self.rect.y = self.y

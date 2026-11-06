@@ -1,5 +1,6 @@
 # this file was created by Ethan Dang
 # code inspired by Chris Bradfield who was inspired by Notch
+# multiplayer code from TechWithTime: https://www.techwithtim.net/tutorials/python-online-game-tutorial
 
 # import pygame because we are making a game; use pg so it's easier to access
 import pygame as pg
@@ -53,6 +54,9 @@ from utils import *
 
 '''
 
+
+clientNumber = 0
+
 class Game: 
     def __init__(self):
         pg.init() # game engine
@@ -70,6 +74,8 @@ class Game:
         self.playing = True # game is playing
 
         self.clock = pg.time.Clock() # add clock
+        self.start_time = 0
+        self.current_time = 0
 
         self.high_score = 0 # store high score
         self.score = 0 # score current score
@@ -119,14 +125,16 @@ class Game:
 
         for row, tiles in enumerate(self.map.data):
             for col, tile in enumerate(tiles):
+                pos = vec(col, row)
+
                 if tile == "0": # wall
-                    Wall(self, col, row)
+                    Wall(self, pos, "grass.png")
                 elif tile == "O": # non-collidable wall
-                    NoTouchWall(self, col, row)
+                    NoTouchWall(self, pos, "dirt.png")
                 elif tile == "K": # kill tile
-                    KillTile(self, col, row)
+                    KillTile(self, pos)
                 elif tile == "W": # win/goal tile
-                    WinTile(self, col, row)
+                    WinTile(self, pos, "dirt.png")
                 elif tile == "C":
                     pass
                     # Collectable(self, col, row, BLUE, 'coin', 1)
@@ -134,9 +142,11 @@ class Game:
         # instantiate after the walls to appear ABOVE the walls
         for row, tiles in enumerate (self.map.data):
             for col, tile in enumerate(tiles):
+                pos = vec(col, row)
+
                 if tile == "P": # player spawn
-                    self.player = Player(self, col, row) # instantiate the player
-                    self.player_spawn = vec(col, row) # set player spawn for respawns
+                    self.player = Player(self, pos) # instantiate the player
+                    self.player_spawn = vec(pos) # set player spawn for respawns
 
         MouseTile(self)
 
@@ -153,7 +163,10 @@ class Game:
             # elapsed time in which physics has not been updated yet
             accumulator = 0
 
+            self.start_time = pg.time.get_ticks()
+
             while self.playing:
+
                 # limits rendering speed and returns milliseconds since prev frame
                 frame_time = self.clock.tick(FPS) / 1000
                 # time gets added to accumulator, capped at .25 sec
@@ -164,11 +177,13 @@ class Game:
 
                 # while there is enough time for a physics step
                 while accumulator >= physics_step:
+                    self.current_time = round((pg.time.get_ticks() - self.start_time)/1000, 2)
                     self.dt = physics_step # set dt to 1/120
                     self.update() # upd movement and collisions
                     accumulator -= physics_step # subtract time it takes to process
 
                 self.draw()
+
 
     def events(self):
         for event in pg.event.get():
@@ -199,10 +214,10 @@ class Game:
 
         self.all_sprites.draw(self.screen) # draw all sprites
 
-        self.draw_text("Framex per second: " + str(self.clock.get_fps()), 24, WHITE, SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
-        self.draw_text("moneys: " + str(COLLECTED["coin"]), 24, WHITE, SCREEN_WIDTH/12, SCREEN_HEIGHT/8)
+        self.draw_text("Framex per second: " + str(self.clock.get_fps()), 24, WHITE, SCREEN_WIDTH/2, SCREEN_HEIGHT - 50)
         self.draw_text("score: " + str(self.score), 24, WHITE, SCREEN_WIDTH/12, SCREEN_HEIGHT/10)
         self.draw_text("high score: " + str(self.high_score), 24, WHITE, SCREEN_WIDTH/12, SCREEN_HEIGHT/12)
+        self.draw_text("current time: " + str(self.current_time), 24, WHITE, SCREEN_WIDTH/2, 100)
         pg.display.flip()
 
 if __name__ == "__main__": # only run if this is the main file
