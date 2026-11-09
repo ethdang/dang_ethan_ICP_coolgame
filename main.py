@@ -90,6 +90,8 @@ class Game:
 
         self.player_spawn = 0 # store spawn point
 
+        self.loaded_players = []
+
         try: # try to connect to network
             self.network = Network()
             self.client_number = self.network.id
@@ -163,6 +165,7 @@ class Game:
                 if tile == "P": # player spawn
                     self.player = Player(self, pos) # instantiate the player
                     self.player_spawn = vec(pos) # set player spawn for respawns
+                    self.loaded_players.append(self.client_number)
 
         MouseTile(self)
 
@@ -170,6 +173,10 @@ class Game:
 
         pg.mixer.music.load(path.join(self.sound_dir, "background_music.mp3"))
         pg.mixer.music.play(loops=-1)
+
+    def player_joined(self, new_id):
+        if (not self.loaded_players.__contains__(new_id)):
+            pass
 
     def read_pos(str):
         str = str.split(",")
@@ -222,7 +229,6 @@ class Game:
                     self.playing = False # output: game is no longer playign
 
                 self.running = False # output: game is no longer running
-               
 
     def draw_text(self, text, size, color, x, y):
         font_name = pg.font.match_font('ariel') # get font

@@ -173,7 +173,7 @@ class Player(Sprite):
 
             for i in range(10):
                 pos = vec(hit.pos.x, hit.pos.y)
-                Particle(self.game, pos)
+                Particle(self.game, pos, 50)
             
             hit.kill() # get rid of coin
             self.game.score += 1
@@ -409,13 +409,15 @@ class MouseTile(Sprite):
         # detect mouse left click
         if (pg.mouse.get_just_pressed()[0]):
             print("click")
-            pos = vec(rounded_pos.x/TILESIZE, rounded_pos.y/TILESIZE)
+            pos = vec(rounded_pos.x/TILESIZE, rounded_pos.y/TILESIZE) # wall wants tile coords
+
+            for i in range(30): # particle before to make it under wall
+                Particle(self.game, pos, 20)
+
             Wall(self.game, pos, "crate.png")
-            for i in range(10):
-                Particle(self.game, pos)
 
 class Particle(Sprite):
-    def __init__(self, game, grid_pos):
+    def __init__(self, game, grid_pos, radius):
         # put it in the all sprites group immediately
         self.groups = game.all_sprites, game.all_particles
 
@@ -429,9 +431,14 @@ class Particle(Sprite):
         self.rect = self.image.get_rect()
         # need to make it spawn at player and not visually at top left corner
         
-        self.speed = randint(1, 2)
+        self.speed = randint(4, 10) # random speed
+
+        # THANK YOU PEISHO WANG FOR CIRCLE FORMULA
+        self.vel = vec(0,0) # initialize velocity
         
-        self.vel = vec(randrange(-180, 180), randrange(-180,180))
+        self.vel.x = randrange(-radius, radius + 1) # choose random number in radius
+        self.vel.y = sqrt(radius**2 - self.vel.x**2) * choice((-1, 1)) # use pythagoren theorum to make circular
+        
         self.pos = grid_pos * TILESIZE
 
         # timer will start the moment it is instantiated
