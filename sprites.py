@@ -70,13 +70,14 @@ def collide_with_walls(sprite, group, dir):
             sprite.hit_rect.centery = sprite.pos.y
 
 class Player(Sprite):
-    def __init__(self, game, grid_pos):
+    def __init__(self, game, grid_pos, remote=False):
         # put it in the all sprites group immediately
         self.groups = game.all_sprites
 
         Sprite.__init__(self, self.groups) # initialize sprite
 
         self.game = game # allow the player to access game
+        self.remote = remote
 
         self.spritesheet = Spritesheet(path.join(self.game.image_dir, "sprite_sheet.png"))
         self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
@@ -89,6 +90,7 @@ class Player(Sprite):
 
         self.vel = vec(0,0)
         self.pos = grid_pos * TILESIZE
+        self.target_pos = vec(self.pos)
         self.acc = vec(0,0) # velocity
 
         self.facing_dir = 1 # 1 is right, 0 center, -1 left
@@ -105,6 +107,9 @@ class Player(Sprite):
         self.state = 0
 
         self.touching_ground = False
+
+    def set_remote_position(self, x, y):
+        self.target_pos = vec(x, y)
 
     def get_keys(self):
         self.vel = vec(0, 0)
@@ -235,6 +240,12 @@ class Player(Sprite):
         self.fall_frames = [self.spritesheet.get_image(TILESIZE * 3, 0, TILESIZE, TILESIZE)]
 
     def update(self):
+        if self.remote:
+            interpolation = min(1, 12 * self.game.dt)
+            self.pos += (self.target_pos - self.pos) * interpolation
+            self.rect.center = self.pos
+            return
+
         # if (self.state == "jumping" or self.state == "falling"):
         self.acc = vec(0,0)
         if (not self.touching_ground):

@@ -21,36 +21,47 @@ s.listen(2)
 print("Waiting for a connection, Server Started")
 
 next_client_id = 1
+clients = []
 
 def threaded_client(conn, client_id):
-    conn.sendall(str.encode(str(client_id))) # send this client's unique ID
-    reply = ""
     while True:
         try:
-            data = conn.recv(2048) # server recieves 2048 bytes
-            reply = data.decode("utf-8") # turn into text
-
-            if not data: # no data being sent means we disconnected
+            data = conn.recv(2048)
+            if not data:
                 print("Disconnected")
                 break
-            else:
-                print("Received: ", reply)
-                print("Sending : ", reply)
-
-            # sends all clients what the server recieved
-            conn.sendall(str.encode(reply))
+            for message in data.decode("utf-8").splitlines():
+                print("Received:", message)
+                broadcast(message, exclude=conn)
         except:
             break
 
-    # closes disconnected clients
     print("Lost connection")
+    if conn in clients:
+        clients.remove(conn)
     conn.close()
 
+def broadcast(message, exclude=None):
+    for client in clients[:]:
+        if client is exclude:
+            continue
+        try:
+            client.sendall((message + "\n").encode())
+        except socket.error:
+            clients.remove(client)
 
 while True:
     conn, addr = s.accept() # wait for client
     print("Connected to:", addr)
     client_id = next_client_id # set client id to be +1 from previous
     next_client_id += 1
+
+    clients.append(conn)
+
+    conn.sendall((str(client_id) + "\n").encode())
+    for existing_client_id in range(1, client_id):
+        conn.sendall((f"player_joined:{existing_client_id}\n").encode())
+    broadcast(f"player_joined:{client_id}")
+
     # start client thread
     start_new_thread(threaded_client, (conn, client_id))

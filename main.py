@@ -89,8 +89,9 @@ class Game:
         self.score = 0 # score current score
 
         self.player_spawn = 0 # store spawn point
+        self.network_send_timer = 0
 
-        self.loaded_players = []
+        self.loaded_players = {}
 
         try: # try to connect to network
             self.network = Network()
@@ -165,7 +166,8 @@ class Game:
                 if tile == "P": # player spawn
                     self.player = Player(self, pos) # instantiate the player
                     self.player_spawn = vec(pos) # set player spawn for respawns
-                    self.loaded_players.append(self.client_number)
+                    # add client id and player to loaded players dict
+                    self.loaded_players[self.client_number] = self.player
 
         MouseTile(self)
 
@@ -175,17 +177,25 @@ class Game:
         pg.mixer.music.play(loops=-1)
 
     def player_joined(self, new_id):
-        if (not self.loaded_players.__contains__(new_id)):
-            pass
+        if new_id not in self.loaded_players:
+            self.loaded_players[new_id] = Player(
+                self, self.player_spawn, remote=True
+            )
 
-    def read_pos(str):
-        str = str.split(",")
-        return int(str[0]), int(str[1])
+    def handle_network_messages(self):
+        if not self.network:
+            return
 
-
-    def make_pos(tup):
-        return str(tup[0]) + "," + str(tup[1])
-
+        for message in self.network.get_messages():
+            parts = message.split(":")
+            if parts[0] == "player_joined":
+                self.player_joined(int(parts[1]))
+            elif parts[0] == "position" and len(parts) == 4:
+                player_id = int(parts[1])
+                self.player_joined(player_id)
+                self.loaded_players[player_id].set_remote_position(
+                    float(parts[2]), float(parts[3])
+                )
 
     def run(self):
             self.playing = True
@@ -239,6 +249,13 @@ class Game:
         self.screen.blit(text_surface, text_rect)
 
     def update(self):
+        self.handle_network_messages()
+        self.network_send_timer += self.dt
+        if self.network and self.network_send_timer >= 1 / 30:
+            self.network.send(
+                f"position:{self.client_number}:{self.player.pos.x}:{self.player.pos.y}"
+            )
+            self.network_send_timer = 0
         self.all_sprites.update()
 
     def draw(self): # higher up draws first
