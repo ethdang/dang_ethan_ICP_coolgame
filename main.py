@@ -236,9 +236,7 @@ class Game:
                 # to prevent long pause from triggering alot of physics updates
                 accumulator += min(frame_time, 0.25)
 
-                self.events()
-                                
-                self.manager.draw_ui(self.screen)
+                self.events()    
 
                 # while there is enough time for a physics step
                 while accumulator >= physics_step:
@@ -302,6 +300,7 @@ class Game:
             self.draw_text("client: " + str(self.client_number), 24, WHITE, SCREEN_WIDTH/2, 70)
         
         self.draw_text("current time: " + str(self.current_time), 24, WHITE, SCREEN_WIDTH/2, 100)
+        self.manager.draw_ui(self.screen)
         pg.display.flip()
 
 if __name__ == "__main__": # only run if this is the main file

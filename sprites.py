@@ -419,6 +419,9 @@ class MouseTile(Sprite):
 
         # detect mouse left click
         if (pg.mouse.get_just_pressed()[0]):
+            if self.game.hello_button.rect.collidepoint(pg.mouse.get_pos()):
+                return # ignore mouse clicks with ui
+            
             print("click")
             pos = vec(rounded_pos.x/TILESIZE, rounded_pos.y/TILESIZE) # wall wants tile coords
 
