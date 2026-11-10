@@ -425,6 +425,9 @@ class MouseTile(Sprite):
             for i in range(30): # particle before to make it under wall
                 Particle(self.game, pos, 20)
 
+            # send network pos of new wall
+            self.game.network.send(f"wall_placed:{self.game.client_number}:{pos.x}:{pos.y}")
+
             Wall(self.game, pos, "crate.png")
 
 class Particle(Sprite):

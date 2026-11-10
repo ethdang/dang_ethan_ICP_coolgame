@@ -2,10 +2,12 @@ import socket # socket allows communication over a network
 from _thread import * # thread lets the server have multple clients
 import sys
 
-# each client sends data to the server to proccess, server sends it back
-# to all clients
+'''
+    Server recieves messages from client and broadcasts to other clients
 
+'''
 server = "127.0.0.1" # server ip address (my computer)
+# server = "0.0.0.0" # run on same wifi
 port = 5555
 
 # create a raw socket
@@ -26,29 +28,29 @@ clients = []
 def threaded_client(conn, client_id):
     while True:
         try:
-            data = conn.recv(2048)
-            if not data:
-                print("Disconnected")
+            data = conn.recv(2048) # recieve data
+            if not data: # did not recieve, server most likely disconnected
+                print("Disconnected") 
                 break
-            for message in data.decode("utf-8").splitlines():
-                print("Received:", message)
-                broadcast(message, exclude=conn)
+            for message in data.decode("utf-8").splitlines(): 
+                # print("Received:", message)
+                broadcast(message, exclude=conn) # broadcast data to excluding the sender
         except:
             break
 
     print("Lost connection")
     if conn in clients:
-        clients.remove(conn)
-    conn.close()
+        clients.remove(conn) # remove clients
+    conn.close() # close connection
 
 def broadcast(message, exclude=None):
     for client in clients[:]:
         if client is exclude:
-            continue
-        try:
+            continue # skip excluded clients (one who sent the data)
+        try: # send data to all clients except excluded
             client.sendall((message + "\n").encode())
         except socket.error:
-            clients.remove(client)
+            clients.remove(client) # remove client if they cannot recieve
 
 while True:
     conn, addr = s.accept() # wait for client

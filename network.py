@@ -2,6 +2,14 @@ import socket
 from _thread import start_new_thread # get thread
 from queue import Queue
 
+'''
+    messages sent to client:
+    
+    position:1:250:400
+    score:100
+    player_joined:2
+'''
+
 class Network:
     def __init__(self):
         # creates socket that matches the one used by server
@@ -9,6 +17,7 @@ class Network:
 
         # sets server address
         self.server = "127.0.0.1" # to run server and main on same computer
+        #self.server = "10.12.40.127" # set server as computer IP (for internet hosting)
         self.port = 5555
         self.addr = (self.server, self.port)
         self.messages = Queue()

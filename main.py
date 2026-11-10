@@ -171,8 +171,6 @@ class Game:
 
         MouseTile(self)
 
-        # self.camera = self.player
-
         pg.mixer.music.load(path.join(self.sound_dir, "background_music.mp3"))
         pg.mixer.music.play(loops=-1)
 
@@ -187,16 +185,35 @@ class Game:
             return
 
         for message in self.network.get_messages():
-            parts = message.split(":")
+            parts = message.split(":") # parse the message as an array
+            # parts[0] is the event id
+            # check for len to ensure we supplied enough information, prevent error
+
             if parts[0] == "player_joined":
                 self.player_joined(int(parts[1]))
+
+            # position : player pos : pos x : pos y
             elif parts[0] == "position" and len(parts) == 4:
                 player_id = int(parts[1])
                 self.player_joined(player_id)
-                self.loaded_players[player_id].set_remote_position(
-                    float(parts[2]), float(parts[3])
-                )
+                self.loaded_players[player_id].set_remote_position(float(parts[2]), float(parts[3]))
+            # coin collected event: player who collected : coin id
+            elif parts[0] == "coin_collected" and len(parts) == 3:
+                player_id = int(parts[1])
+                coin_id = int(parts[2])
 
+                print(f"Player {player_id} collected coin {coin_id}")
+            # chat : player who sent : message
+            elif parts[0] == "chat" and len(parts) >= 3:
+                player_id = int(parts[1])
+                text = ":".join(parts[2:])
+                print(f"Player {player_id}: {text}")
+            # wall placed : player who placed: pos x : pos y
+            elif parts[0] == "wall_placed" and len(parts) == 4:
+                player_id = int(parts[1])
+                pos = vec(int(float(parts[2])), int(float(parts[3])))
+                Wall(self, pos, "crate.png")
+            
     def run(self):
             self.playing = True
             # each physic step represents 1/upd rate of a second
@@ -251,6 +268,7 @@ class Game:
     def update(self):
         self.handle_network_messages()
         self.network_send_timer += self.dt
+        # send current position to server every 30 frames
         if self.network and self.network_send_timer >= 1 / 30:
             self.network.send(
                 f"position:{self.client_number}:{self.player.pos.x}:{self.player.pos.y}"
