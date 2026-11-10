@@ -1,9 +1,11 @@
 # this file was created by Ethan Dang
 # code inspired by Chris Bradfield who was inspired by Notch
 # multiplayer code from TechWithTime https://www.techwithtim.net/tutorials/python-online-game-tutorial
+# pygame ui https://pygame-gui.readthedocs.io/en/latest/quick_start.html
 
 # import pygame because we are making a game; use pg so it's easier to access
 import pygame as pg
+import pygame_gui # pygame ui
 from os import path
 # import sprites so we can access our sprites
 from sprites import *
@@ -15,11 +17,10 @@ from network import Network
 
 
 '''
-    to start playing
-    1. run server.py
-    2. in a seperate terminal, run main py
+    TO START PLAYING: 
+    1. run: python server.py
+    2. in a seperate terminal, run: python main.py
 '''
-
 
 
 '''
@@ -72,11 +73,12 @@ class Game:
 
         # initialize the screen
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-
-        print("game initialized")
-
+        
         # set window title
-        pg.display.set_caption(TITLE) 
+        pg.display.set_caption(TITLE)
+
+        # set ui manager
+        self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT)) 
 
         self.running = True # game is running
         self.playing = True # game is playing
@@ -92,6 +94,10 @@ class Game:
         self.network_send_timer = 0
 
         self.loaded_players = {}
+
+        self.hello_button = pygame_gui.elements.UIButton(relative_rect=pg.Rect((350, 275), (100, 50)),
+                                             text='Say Hello',
+                                             manager=self.manager)
 
         try: # try to connect to network
             self.network = Network()
@@ -231,6 +237,8 @@ class Game:
                 accumulator += min(frame_time, 0.25)
 
                 self.events()
+                                
+                self.manager.draw_ui(self.screen)
 
                 # while there is enough time for a physics step
                 while accumulator >= physics_step:
@@ -239,11 +247,16 @@ class Game:
                     self.update() # upd movement and collisions
                     accumulator -= physics_step # subtract time it takes to process
 
+                
+                self.manager.update(self.dt)
                 self.draw()
+
 
 
     def events(self):
         for event in pg.event.get():
+            self.manager.process_events(event)
+
             if event.type == pg.QUIT: # input: player QUITs the game
                 if (self.score > self.high_score):
                     with open(path.join(self.game_dir, self.game_save_file), 'w') as file:

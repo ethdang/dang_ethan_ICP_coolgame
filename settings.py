@@ -32,7 +32,4 @@ MOB_HIT_RECT = pg.Rect(0,0, TILESIZE - 10, TILESIZE - 10)
 SCREEN_WIDTH = 1024 # width of screen
 SCREEN_HEIGHT = 768 # height of screen
 
-WORLD_WIDTH = 3072
-WORLD_HEIGHT = 2304
-
-TITLE = "COOLer game"
+TITLE = "average chicken horse"
