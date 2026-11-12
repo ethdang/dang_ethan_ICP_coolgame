@@ -409,6 +409,9 @@ class MouseTile(Sprite):
         self.rect.y = self.pos.y
 
     def update(self):
+        if self.game.game_state == "menu":
+            return # skip because no placing in menu
+
         # get mouse pos, but center it
         self.pos = vec(pg.mouse.get_pos()[0] - TILESIZE/2, pg.mouse.get_pos()[1] - TILESIZE/2)
         # round it to intervales of our tilesize

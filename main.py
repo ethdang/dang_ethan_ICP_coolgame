@@ -95,8 +95,12 @@ class Game:
 
         self.loaded_players = {}
 
-        self.hello_button = pygame_gui.elements.UIButton(relative_rect=pg.Rect((350, 275), (100, 50)),
-                                             text='Say Hello',
+        self.player_status = {}
+
+        self.game_state = ""
+
+        self.ready_button = pygame_gui.elements.UIButton(relative_rect=pg.Rect((350, 275), (100, 50)),
+                                             text='ready up',
                                              manager=self.manager)
 
         try: # try to connect to network
@@ -133,6 +137,7 @@ class Game:
                 print("high score set to 0")
 
     def new(self): # when we create or start up a new game
+        self.game_state = "menu"
         self.load_data("_images/maps_v3.png")
         self.all_sprites = pg.sprite.Group() # group all sprites
         self.all_mobs = pg.sprite.Group() # group all mob
@@ -171,6 +176,7 @@ class Game:
 
                 if tile == "P": # player spawn
                     self.player = Player(self, pos) # instantiate the player
+                    self.player.freeze_movement = True
                     self.player_spawn = vec(pos) # set player spawn for respawns
                     # add client id and player to loaded players dict
                     self.loaded_players[self.client_number] = self.player
@@ -179,6 +185,7 @@ class Game:
 
         pg.mixer.music.load(path.join(self.sound_dir, "background_music.mp3"))
         pg.mixer.music.play(loops=-1)
+
 
     def player_joined(self, new_id):
         if new_id not in self.loaded_players:
@@ -219,6 +226,15 @@ class Game:
                 player_id = int(parts[1])
                 pos = vec(int(float(parts[2])), int(float(parts[3])))
                 Wall(self, pos, "crate.png")
+            # player readied : player who readied
+            elif parts[0] == "player_ready" and len(parts) == 2:
+                player_id = int(parts[1])
+                self.player_status[player_id] = "ready" # set to ready
+                print(self.player_status)
+            # player finished : player who finished : time they finished
+            elif parts[0] == "player_finished" and len(parts) == 3:
+                player_id = int(parts[1])
+                self.player_status[player_id] = "finished"
             
     def run(self):
             self.playing = True
@@ -250,7 +266,6 @@ class Game:
                 self.draw()
 
 
-
     def events(self):
         for event in pg.event.get():
             self.manager.process_events(event)
@@ -267,6 +282,10 @@ class Game:
                     self.playing = False # output: game is no longer playign
 
                 self.running = False # output: game is no longer running
+
+            if event.type == pygame_gui.UI_BUTTON_PRESSED:
+              if event.ui_element == self.ready_button and self.network:
+                    self.network.send(f"ready:{self.client_number}")
 
     def draw_text(self, text, size, color, x, y):
         font_name = pg.font.match_font('ariel') # get font
