@@ -240,10 +240,19 @@ class Player(Sprite):
         self.fall_frames = [self.spritesheet.get_image(TILESIZE * 3, 0, TILESIZE, TILESIZE)]
 
     def update(self):
-        if self.remote:
-            interpolation = min(1, 12 * self.game.dt)
+        if self.remote: # if this a remote player
+            interpolation = min(1, 12 * self.game.dt) # smoothen
             self.pos += (self.target_pos - self.pos) * interpolation
             self.rect.center = self.pos
+            return # ignore the movement
+
+        if self.game.game_state == "menu":
+            return # dont do anything in menu
+        elif self.game.game_state == "started":
+            self.freeze_movement = False # game started, unfreeze movement
+            # would be better to instantiate player on game start instead...
+
+        if self.freeze_movement:
             return
 
         # if (self.state == "jumping" or self.state == "falling"):
@@ -422,7 +431,7 @@ class MouseTile(Sprite):
 
         # detect mouse left click
         if (pg.mouse.get_just_pressed()[0]):
-            if self.game.hello_button.rect.collidepoint(pg.mouse.get_pos()):
+            if self.game.ready_button.rect.collidepoint(pg.mouse.get_pos()):
                 return # ignore mouse clicks with ui
             
             print("click")

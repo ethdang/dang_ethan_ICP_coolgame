@@ -137,7 +137,8 @@ class Game:
                 print("high score set to 0")
 
     def new(self): # when we create or start up a new game
-        self.game_state = "menu"
+        self.game_state = "menu" # set game state to menu 
+        
         self.load_data("_images/maps_v3.png")
         self.all_sprites = pg.sprite.Group() # group all sprites
         self.all_mobs = pg.sprite.Group() # group all mob
@@ -235,6 +236,9 @@ class Game:
             elif parts[0] == "player_finished" and len(parts) == 3:
                 player_id = int(parts[1])
                 self.player_status[player_id] = "finished"
+            elif parts[0] == "game_started":
+                self.player.freeze_movement = False
+                self.game_state = "started"
             
     def run(self):
             self.playing = True
