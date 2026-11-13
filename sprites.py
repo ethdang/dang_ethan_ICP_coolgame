@@ -101,6 +101,8 @@ class Player(Sprite):
         self.current_frame = 0
         self.load_images()
 
+        self.final_time = 0 # final time of completion
+
         self.freeze_movement = False
         self.has_won = False
 
@@ -188,6 +190,10 @@ class Player(Sprite):
             print("player win")
             self.acc = vec(0,0)
             self.rect.center = self.pos
+            # send win to server
+            self.final_time = self.game.current_time # set final time
+            self.game.network.send(f"finished:{self.game.client_number}:{self.final_time}")
+            
             self.has_won = True
             self.freeze_movement = True
             # player dances, add anim later
@@ -245,15 +251,15 @@ class Player(Sprite):
             self.pos += (self.target_pos - self.pos) * interpolation
             self.rect.center = self.pos
             return # ignore the movement
-
+        
         if self.game.game_state == "menu":
             return # dont do anything in menu
-        elif self.game.game_state == "started":
+        elif self.game.game_state == "started" and not self.has_won:
             self.freeze_movement = False # game started, unfreeze movement
             # would be better to instantiate player on game start instead...
 
-        if self.freeze_movement:
-            return
+        # if self.freeze_movement:
+        #     return
 
         # if (self.state == "jumping" or self.state == "falling"):
         self.acc = vec(0,0)

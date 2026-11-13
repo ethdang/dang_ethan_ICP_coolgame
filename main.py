@@ -64,8 +64,6 @@ from network import Network
 '''
 
 
-clientNumber = 0
-
 class Game: 
     def __init__(self):
         pg.init() # game engine
@@ -138,7 +136,7 @@ class Game:
 
     def new(self): # when we create or start up a new game
         self.game_state = "menu" # set game state to menu 
-        
+
         self.load_data("_images/maps_v3.png")
         self.all_sprites = pg.sprite.Group() # group all sprites
         self.all_mobs = pg.sprite.Group() # group all mob
@@ -321,8 +319,12 @@ class Game:
        
         if self.client_number != None: # only display if we have a client id
             self.draw_text("client: " + str(self.client_number), 24, WHITE, SCREEN_WIDTH/2, 70)
-        
-        self.draw_text("current time: " + str(self.current_time), 24, WHITE, SCREEN_WIDTH/2, 100)
+
+        if not self.player.has_won:
+            self.draw_text("current time: " + str(self.current_time), 24, WHITE, SCREEN_WIDTH/2, 100)
+        else:
+            self.draw_text("current time: " + str(self.player.final_time), 24, WHITE, SCREEN_WIDTH/2, 100)
+            
         self.manager.draw_ui(self.screen)
         pg.display.flip()
 
