@@ -33,27 +33,27 @@ class Network:
         self.client.connect(self.addr) # connect the client to the server
         return int(self.receive_line())
 
-    def send(self, data):
+    def send(self, data): # send all clients the data
         try:
             self.client.sendall((data + "\n").encode())
-        except socket.error as e: 
+        except socket.error as e: # print the error if we encounter one
             print(e)
 
-    def receive_line(self):
+    def receive_line(self): # recieve data and turn it into a multiline string to decode
         while "\n" not in self.receive_buffer:
             self.receive_buffer += self.client.recv(2048).decode()
         line, self.receive_buffer = self.receive_buffer.split("\n", 1)
         return line
 
-    def listen(self):
+    def listen(self): # listen for any data sent
         while True:
             try:
                 self.messages.put(self.receive_line())
             except socket.error:
                 break
 
-    def get_messages(self):
+    def get_messages(self): # get messages
         messages = []
         while not self.messages.empty():
-            messages.append(self.messages.get())
+            messages.append(self.messages.get()) # get messages and return it
         return messages

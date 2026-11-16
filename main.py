@@ -237,6 +237,12 @@ class Game:
             elif parts[0] == "game_started":
                 self.player.freeze_movement = False
                 self.game_state = "started"
+            elif parts[0] == "updated_score" and len(parts) == 3:
+                player_id = int(parts[1])
+                score = int(parts[2])
+
+                if player_id == self.client_number:
+                    self.score = score
             
     def run(self):
             self.playing = True

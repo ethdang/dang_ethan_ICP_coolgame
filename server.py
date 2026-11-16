@@ -45,7 +45,7 @@ def threaded_client(conn, client_id): # client id is the client who sent
     while True:
         try:
             data = conn.recv(2048) # recieve data
-            if not data: # did not recieve, server most likely disconnected
+            if not data: # did not recieve, client most likely disconnected
                 print("Disconnected") 
                 break
             for message in data.decode("utf-8").splitlines(): 
@@ -58,26 +58,57 @@ def threaded_client(conn, client_id): # client id is the client who sent
                     game_state["players"][client_id]["ready"] = True
                     broadcast(f"player_ready:{client_id}", exclude=conn)
 
-                    readied = 0
-                    for player in game_state["players"].values():
+                    readied = 0 
+                    for player in game_state["players"].values(): # check if all players are ready
                         if player["ready"]:
                             readied += 1
 
-                    if readied == len(game_state["players"]):
+                    if readied == len(game_state["players"]): 
                         print("all player ready")
                         game_state["phase"] = "playing"
                         broadcast("game_started")
 
-                    continue # skip broadcast message
+                    continue # skip other broadcast message
                 # player finished course
                 elif parts[0] == "finished" and int(parts[1]) == client_id:
-                    finish_time = parts[2]
+                    finish_time = float(parts[2])
 
                     game_state["players"][client_id]["finished"] = True
                     game_state["players"][client_id]["finish_time"] = finish_time
 
                     broadcast(f"player_finished:{client_id}:{finish_time}", exclude=conn)
-                    continue
+
+                    finished = 0 
+                    fastest_time = 0
+                    fastest_player = 0
+                    for player in game_state["players"].values(): # check all players
+                        if player["finish_time"]: # if we have a finish time, we finished 
+                            finished += 1
+                            
+                            if not fastest_time: # if we dont have a fastest time yet,
+                                fastest_time = player["finish_time"]
+                                fastest_player = player
+                                continue
+
+                            if fastest_time > player["finish_time"]: # if the fastest time is slower
+                                fastest_time = player["finish_time"] # set new fastest
+                                fastest_player = player
+
+                            player["score"] += 1 # 1 point for finishing
+
+                    fastest_player["score"] += 1 # another point for finishing first
+
+                    # check how many players have finished
+                    if finished == len(game_state["players"]):
+                        print("all player finished")
+                        game_state["phase"] = "round_finished" # set phase
+                        broadcast("all_player_finished")
+
+                        for player_id, player in game_state["players"].items(): # items() gets item in dict
+                            # send the scores for each player
+                            broadcast(f"updated_score:{player_id}:{player['score']}")
+                    
+                    continue # skip other broadcast message
 
             broadcast(message, exclude=conn) # broadcast data to excluding the sender
         except Exception as error:
@@ -108,14 +139,13 @@ while True:
     client_id = next_client_id # set client id to be +1 from previous
     next_client_id += 1
 
-    
-
     clients.append(conn)
     # add empty player data to new player
     game_state["players"][client_id] = {
         "ready": False,
         "finished": False,
-        "finish_time": None
+        "finish_time": None,
+        "score" : 0
     }
 
     conn.sendall((str(client_id) + "\n").encode())
