@@ -427,7 +427,7 @@ class MouseTile(Sprite):
                 Particle(self.game, pos, 20)
 
             # send network pos of new wall
-            self.game.network.send(f"wall_placed:{self.game.client_number}:{pos.x}:{pos.y}")
+            self.game.network.send(f"placed::{self.game.client_number}:{"crate.png"}:{pos.x}:{pos.y}")
 
             Wall(self.game, pos, "crate.png")
 

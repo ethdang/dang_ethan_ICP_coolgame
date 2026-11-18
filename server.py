@@ -54,60 +54,69 @@ def threaded_client(conn, client_id): # client id is the client who sent
 
                 # check for client_id because we store data by the id
                 # player is ready
-                if parts[0] == "ready" and int(parts[1]) == client_id:
-                    game_state["players"][client_id]["ready"] = True
-                    broadcast(f"player_ready:{client_id}", exclude=conn)
 
-                    readied = 0 
-                    for player in game_state["players"].values(): # check if all players are ready
-                        if player["ready"]:
-                            readied += 1
+                if not int(parts[1]) == client_id:
+                    return
 
-                    if readied == len(game_state["players"]): 
-                        game_state["phase"] = "playing"
-                        broadcast("game_started")
+                match parts[0]:
+                    case "ready":
+                        game_state["players"][client_id]["ready"] = True
+                        broadcast(f"player_ready:{client_id}", exclude=conn)
 
-                    continue # skip other broadcast message
-                # player finished course
-                elif parts[0] == "finished" and int(parts[1]) == client_id:
-                    finish_time = float(parts[2])
+                        readied = 0 
+                        for player in game_state["players"].values(): # check if all players are ready
+                            if player["ready"]:
+                                readied += 1
 
-                    game_state["players"][client_id]["finished"] = True
-                    game_state["players"][client_id]["finish_time"] = finish_time
+                        if readied == len(game_state["players"]): 
+                            game_state["phase"] = "playing"
+                            broadcast("game_started")
 
-                    broadcast(f"player_finished:{client_id}:{finish_time}", exclude=conn)
+                        continue # skip other broadcast message
+                    # player finished course
+                    case "finished":
+                        finish_time = float(parts[2])
 
-                    finished = 0 
-                    fastest_time = 0
-                    fastest_player = 0
-                    for player in game_state["players"].values(): # check all players
-                        if player["finish_time"]: # if we have a finish time, we finished 
-                            finished += 1
-                            
-                            if not fastest_time: # if we dont have a fastest time yet,
-                                fastest_time = player["finish_time"]
-                                fastest_player = player
-                                continue
+                        game_state["players"][client_id]["finished"] = True
+                        game_state["players"][client_id]["finish_time"] = finish_time
 
-                            if fastest_time > player["finish_time"]: # if the fastest time is slower
-                                fastest_time = player["finish_time"] # set new fastest
-                                fastest_player = player
+                        broadcast(f"player_finished:{client_id}:{finish_time}", exclude=conn)
 
-                            player["score"] += 1 # 1 point for finishing
+                        finished = 0 
+                        fastest_time = 0
+                        fastest_player = 0
+                        for player in game_state["players"].values(): # check all players
+                            if player["finish_time"]: # if we have a finish time, we finished 
+                                finished += 1
+                                
+                                if not fastest_time: # if we dont have a fastest time yet,
+                                    fastest_time = player["finish_time"]
+                                    fastest_player = player
+                                    continue
 
-                    fastest_player["score"] += 1 # another point for finishing first
+                                if fastest_time > player["finish_time"]: # if the fastest time is slower
+                                    fastest_time = player["finish_time"] # set new fastest
+                                    fastest_player = player
 
-                    # check how many players have finished
-                    if finished == len(game_state["players"]):
-                        print("all player finished")
-                        game_state["phase"] = "round_finished" # set phase
-                        broadcast("all_player_finished")
+                                player["score"] += 1 # 1 point for finishing
 
-                        for player_id, player in game_state["players"].items(): # items() gets item in dict
-                            # send the scores for each player
-                            broadcast(f"updated_score:{player_id}:{player['score']}")
-                    
-                    continue # skip other broadcast message
+                        fastest_player["score"] += 1 # another point for finishing first
+
+                        # check how many players have finished
+                        if finished == len(game_state["players"]):
+                            print("all player finished")
+                            game_state["phase"] = "round_finished" # set phase
+                            broadcast("all_player_finished")
+
+                            for player_id, player in game_state["players"].items(): # items() gets item in dict
+                                # send the scores for each player
+                                broadcast(f"updated_score:{player_id}:{player['score']}")
+                        
+                        continue # skip other broadcast message
+
+                    case "placed":
+                        game_state["players"][client_id]["has_placed"] = True
+                        broadcast("finished_object_placed")
 
             broadcast(message, exclude=conn) # broadcast data to excluding the sender
         except Exception as error:
@@ -144,7 +153,8 @@ while True:
         "ready": False,
         "finished": False,
         "finish_time": None,
-        "score" : 0
+        "score" : 0,
+        "has_placed": False # has the player placed their object yet
     }
 
     conn.sendall((str(client_id) + "\n").encode())

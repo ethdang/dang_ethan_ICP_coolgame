@@ -204,48 +204,50 @@ class Game:
             # parts[0] is the event id
             # check for len to ensure we supplied enough information, prevent error
 
-            if parts[0] == "player_joined":
-                self.player_joined(int(parts[1]))
+            match parts[0]:
+                # player joined : player who joined
+                case "player_joined":
+                    self.player_joined(int(parts[1]))
+                # position : player pos : pos x : pos y
+                case "position" if len(parts) == 4:
+                    player_id = int(parts[1])
+                    self.player_joined(player_id)
+                    self.loaded_players[player_id].set_remote_position(float(parts[2]), float(parts[3]))
+                # coin collected: player who collected : coin id
+                case "coin_collected" if len(parts) == 3:
+                    player_id = int(parts[1])
+                    coin_id = int(parts[2])
+                    # print(f"Player {player_id} collected coin {coin_id}")
+                # chat : player who sent : message
+                case "chat" if len(parts) >= 3:
+                    player_id = int(parts[1])
+                    text = ":".join(parts[2:])
+                    print(f"Player {player_id}: {text}")
+                # placed : object : player who placed : pos x : pos y
+                case "placed" if len(parts) == 5:
+                    player_id = int(parts[2])
+                    pos = vec(int(float(parts[3])), int(float(parts[4])))
+                    Wall(self, pos, parts[1])
+                # player readied : player who readied
+                case "player_ready" if len(parts) == 2:
+                    player_id = int(parts[1])
+                    self.player_status[player_id] = "ready" # set to ready
+                    print(self.player_status)
+                # player finished : player who finished : time they finished
+                case "player_finished" if len(parts) == 3:
+                    player_id = int(parts[1])
+                    self.player_status[player_id] = "finished"
+                # game started
+                case "game_started":
+                    self.player.freeze_movement = False
+                    self.game_state = "started"
+                # updated score : player : score
+                case "updated_score" if len(parts) == 3:
+                    player_id = int(parts[1])
+                    score = int(parts[2])
 
-            # position : player pos : pos x : pos y
-            elif parts[0] == "position" and len(parts) == 4:
-                player_id = int(parts[1])
-                self.player_joined(player_id)
-                self.loaded_players[player_id].set_remote_position(float(parts[2]), float(parts[3]))
-            # coin collected event: player who collected : coin id
-            elif parts[0] == "coin_collected" and len(parts) == 3:
-                player_id = int(parts[1])
-                coin_id = int(parts[2])
-
-                print(f"Player {player_id} collected coin {coin_id}")
-            # chat : player who sent : message
-            elif parts[0] == "chat" and len(parts) >= 3:
-                player_id = int(parts[1])
-                text = ":".join(parts[2:])
-                print(f"Player {player_id}: {text}")
-            # wall placed : player who placed: pos x : pos y
-            elif parts[0] == "wall_placed" and len(parts) == 4:
-                player_id = int(parts[1])
-                pos = vec(int(float(parts[2])), int(float(parts[3])))
-                Wall(self, pos, "crate.png")
-            # player readied : player who readied
-            elif parts[0] == "player_ready" and len(parts) == 2:
-                player_id = int(parts[1])
-                self.player_status[player_id] = "ready" # set to ready
-                print(self.player_status)
-            # player finished : player who finished : time they finished
-            elif parts[0] == "player_finished" and len(parts) == 3:
-                player_id = int(parts[1])
-                self.player_status[player_id] = "finished"
-            elif parts[0] == "game_started":
-                self.player.freeze_movement = False
-                self.game_state = "started"
-            elif parts[0] == "updated_score" and len(parts) == 3:
-                player_id = int(parts[1])
-                score = int(parts[2])
-
-                if player_id == self.client_number:
-                    self.score = score
+                    if player_id == self.client_number:
+                        self.score = score
             
     def run(self):
             self.playing = True
