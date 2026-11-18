@@ -343,26 +343,6 @@ class NoTouchWall(Sprite):
         self.rect.x = self.pos.x
         self.rect.y = self.pos.y
 
-class NoTouchWall(Sprite):
-    def __init__(self, game, grid_pos, sprite_name):
-        # put it in the all sprites group immediately
-        self.groups = game.all_sprites, game.all_no_touch
-
-        Sprite.__init__(self, self.groups) # initialize sprite
-
-        self.game = game # allow the wall to access game
-
-        self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.spritesheet = Spritesheet(path.join(self.game.image_dir, sprite_name))
-        self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
-        self.image.set_alpha(randrange(200, 220)) # create slight dynamic variation
-        self.rect = self.image.get_rect()
-
-        self.pos = grid_pos * TILESIZE
-
-        self.rect.x = self.pos.x
-        self.rect.y = self.pos.y
-
 class WinTile(Sprite):
     def __init__(self, game, grid_pos, sprite_name):
         # put it in the all sprites group immediately

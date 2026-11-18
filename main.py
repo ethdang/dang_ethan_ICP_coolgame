@@ -1,6 +1,6 @@
 # this file was created by Ethan Dang
 # code inspired by Chris Bradfield who was inspired by Notch
-# multiplayer code from TechWithTime https://www.techwithtim.net/tutorials/python-online-game-tutorial
+# multiplayer code from TechWithTim https://www.techwithtim.net/tutorials/python-online-game-tutorial
 # pygame ui https://pygame-gui.readthedocs.io/en/latest/quick_start.html
 
 # import pygame because we are making a game; use pg so it's easier to access
@@ -76,7 +76,14 @@ class Game:
         pg.display.set_caption(TITLE)
 
         # set ui manager
-        self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT)) 
+        self.manager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), theme_path="quick_start.json")
+
+        self.ready_button = pygame_gui.elements.UIButton(
+            relative_rect=pg.Rect((SCREEN_HEIGHT/2, SCREEN_WIDTH/2),
+            (100, 50)),
+            text='ready up',
+            manager=self.manager
+            )
 
         self.running = True # game is running
         self.playing = True # game is playing
@@ -96,10 +103,6 @@ class Game:
         self.player_status = {}
 
         self.game_state = ""
-
-        self.ready_button = pygame_gui.elements.UIButton(relative_rect=pg.Rect((350, 275), (100, 50)),
-                                             text='ready up',
-                                             manager=self.manager)
 
         try: # try to connect to network
             self.network = Network()

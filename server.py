@@ -44,7 +44,7 @@ game_state = {
 def threaded_client(conn, client_id): # client id is the client who sent
     while True:
         try:
-            data = conn.recv(2048) # recieve data
+            data = conn.recv(2048) # recieve data, maximum amt of byte 2048
             if not data: # did not recieve, client most likely disconnected
                 print("Disconnected") 
                 break
@@ -64,7 +64,6 @@ def threaded_client(conn, client_id): # client id is the client who sent
                             readied += 1
 
                     if readied == len(game_state["players"]): 
-                        print("all player ready")
                         game_state["phase"] = "playing"
                         broadcast("game_started")
 
