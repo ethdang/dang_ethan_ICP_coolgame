@@ -185,6 +185,8 @@ class Game:
 
         MouseTile(self)
 
+        self.player_status[self.client_number] = " "
+
         pg.mixer.music.load(path.join(self.sound_dir, "background_music.mp3"))
         pg.mixer.music.play(loops=-1)
 
@@ -194,6 +196,8 @@ class Game:
             self.loaded_players[new_id] = Player(
                 self, self.player_spawn, remote=True
             )
+
+        self.player_status[new_id] = " "
 
     def handle_network_messages(self):
         if not self.network:
@@ -223,11 +227,11 @@ class Game:
                     player_id = int(parts[1])
                     text = ":".join(parts[2:])
                     print(f"Player {player_id}: {text}")
-                # placed : object : player who placed : pos x : pos y
+                # placed : player who placed : object : pos x : pos y
                 case "placed" if len(parts) == 5:
-                    player_id = int(parts[2])
+                    player_id = int(parts[1])
                     pos = vec(int(float(parts[3])), int(float(parts[4])))
-                    Wall(self, pos, parts[1])
+                    Wall(self, pos, parts[2])
                 # player readied : player who readied
                 case "player_ready" if len(parts) == 2:
                     player_id = int(parts[1])
@@ -237,10 +241,6 @@ class Game:
                 case "player_finished" if len(parts) == 3:
                     player_id = int(parts[1])
                     self.player_status[player_id] = "finished"
-                # game started
-                case "game_started":
-                    self.player.freeze_movement = False
-                    self.game_state = "started"
                 # updated score : player : score
                 case "updated_score" if len(parts) == 3:
                     player_id = int(parts[1])
@@ -248,6 +248,25 @@ class Game:
 
                     if player_id == self.client_number:
                         self.score = score
+                # set status : player : new status
+                case "set_status" if len(parts) == 3:
+                    self.player_status[int(parts[1])] = parts[2]
+                    print("AD")
+
+                # 3 PHASES: Object selection, placement of object, completion of course
+
+                # game started
+                case "game_started":
+                    self.game_state = "selection"
+                # selection finished
+                case "selection_finished":
+                    self.game_state = "placement"
+                # finished object placed
+                case "finished_placement":
+                    self.player.freeze_movement = False
+                    self.game_state = "playing"
+
+            # print(self.player_status)
             
     def run(self):
             self.playing = True

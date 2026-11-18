@@ -404,9 +404,11 @@ class MouseTile(Sprite):
         self.rect.y = self.pos.y
 
     def update(self):
-        if self.game.game_state == "menu":
-            return # skip because no placing in menu
-
+        if self.game.game_state != "placement":
+            return # only allow placement in placement phase
+        if self.game.player_status[self.game.client_number] == "placed":
+            return # already placed
+        
         # get mouse pos, but center it
         self.pos = vec(pg.mouse.get_pos()[0] - TILESIZE/2, pg.mouse.get_pos()[1] - TILESIZE/2)
         # round it to intervales of our tilesize
@@ -427,8 +429,8 @@ class MouseTile(Sprite):
                 Particle(self.game, pos, 20)
 
             # send network pos of new wall
-            self.game.network.send(f"placed::{self.game.client_number}:{"crate.png"}:{pos.x}:{pos.y}")
-
+            self.game.network.send(f"placed:{self.game.client_number}:{"crate.png"}:{pos.x}:{pos.y}")
+            self.game.player_status[self.game.client_number] = "placed" # set to placed
             Wall(self.game, pos, "crate.png")
 
 class Particle(Sprite):

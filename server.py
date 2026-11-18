@@ -69,8 +69,8 @@ def threaded_client(conn, client_id): # client id is the client who sent
                                 readied += 1
 
                         if readied == len(game_state["players"]): 
-                            game_state["phase"] = "playing"
-                            broadcast("game_started")
+                            game_state["phase"] = "selection"
+                            broadcast("selection_finished")
 
                         continue # skip other broadcast message
                     # player finished course
@@ -111,12 +111,24 @@ def threaded_client(conn, client_id): # client id is the client who sent
                             for player_id, player in game_state["players"].items(): # items() gets item in dict
                                 # send the scores for each player
                                 broadcast(f"updated_score:{player_id}:{player['score']}")
+                                broadcast(f"player_status:{player_id}:{"finished"}")
                         
                         continue # skip other broadcast message
 
                     case "placed":
                         game_state["players"][client_id]["has_placed"] = True
-                        broadcast("finished_object_placed")
+                        broadcast(f"player_status:{player_id}:{"finished_placement"}")
+
+                        done_placed = 0
+                        for player in game_state["players"].values(): # check if all players are ready
+                            if player["has_placed"]:
+                                done_placed += 1
+
+                        if done_placed == len(game_state["players"]): 
+                            game_state["phase"] = "playing"
+                            broadcast("finished_object_placed")
+
+                        # dont continue because we still want the wall to be placed
 
             broadcast(message, exclude=conn) # broadcast data to excluding the sender
         except Exception as error:
@@ -160,7 +172,9 @@ while True:
     conn.sendall((str(client_id) + "\n").encode())
     for existing_client_id in range(1, client_id):
         conn.sendall((f"player_joined:{existing_client_id}\n").encode())
+        conn.sendall((f"player_status:{client_id}:{" "}\n").encode())
     broadcast(f"player_joined:{client_id}")
+    broadcast(f"player_status:{client_id}:{" "}")
 
     # start client thread
     start_new_thread(threaded_client, (conn, client_id))
