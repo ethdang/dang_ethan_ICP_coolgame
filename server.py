@@ -117,7 +117,7 @@ def threaded_client(conn, client_id): # client id is the client who sent
 
                     case "placed":
                         game_state["players"][client_id]["has_placed"] = True
-                        broadcast(f"player_status:{player_id}:{"finished_placement"}")
+                        broadcast(f"player_status:{client_id}:{"finished_placement"}")
 
                         done_placed = 0
                         for player in game_state["players"].values(): # check if all players are ready
@@ -126,7 +126,7 @@ def threaded_client(conn, client_id): # client id is the client who sent
 
                         if done_placed == len(game_state["players"]): 
                             game_state["phase"] = "playing"
-                            broadcast("finished_object_placed")
+                            broadcast("finished_placement")
 
                         # dont continue because we still want the wall to be placed
 

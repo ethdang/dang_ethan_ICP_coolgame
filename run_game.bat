@@ -8,6 +8,7 @@
 @echo off
 cd /d "%~dp0"
 
+taskkill /FI "WINDOWTITLE eq Game Server*" /T /F >nul 2>&1
 powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.Name -match '^python(\\.exe)?$' -and $_.CommandLine -like '*server.py*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"
 
 start "Game Server" cmd /k python server.py

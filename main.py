@@ -221,7 +221,7 @@ class Game:
                 case "coin_collected" if len(parts) == 3:
                     player_id = int(parts[1])
                     coin_id = int(parts[2])
-                    # print(f"Player {player_id} collected coin {coin_id}")
+                    print(f"Player {player_id} collected coin {coin_id}")
                 # chat : player who sent : message
                 case "chat" if len(parts) >= 3:
                     player_id = int(parts[1])
